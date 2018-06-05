@@ -84,7 +84,7 @@ export class PrioritisationComponent implements OnInit {
         this.prioritisationService.create(this.selectedProject.name, this.model)
             .subscribe(
             data => {
-                this.loadPrioritisation()
+                this.loadPrioritisation();
                 this.loading = false;
             },
             error => {

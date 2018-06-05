@@ -83,7 +83,7 @@ export class PrioritisationDetailsComponent implements OnInit {
         if (this.currentIndex + 1 <= this.prioritisation.comparisons.length) {
             //this.save();
             this.currentIndex++;
-            this.currentComparison = this.prioritisation.comparisons[this.currentIndex - 1]
+            this.currentComparison = this.prioritisation.comparisons[this.currentIndex - 1];
             this.changeText(this.currentComparison.weight);
         }
     }
@@ -92,7 +92,7 @@ export class PrioritisationDetailsComponent implements OnInit {
         if (this.currentIndex - 1 > 0) {
             //this.save();
             this.currentIndex--;
-            this.currentComparison = this.prioritisation.comparisons[this.currentIndex - 1]
+            this.currentComparison = this.prioritisation.comparisons[this.currentIndex - 1];
             this.changeText(this.currentComparison.weight);
         }
     }
