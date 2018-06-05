@@ -1,0 +1,54 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<h2>Projects</h2>
+			<div *ngIf="projects?.length > 0">
+						<div class="list-group">
+				<a class="list-group-item" *ngFor="let project of projects"
+				  [class.active]="project === selectedProject"
+				  (click)="onSelect(project)">
+				   <h4 class="list-group-item-heading">{{project.name}}</h4>
+        		   <p class="list-group-item-text">{{project.beschreibung}}
+                   </p>
+                </a>
+			</div>
+			</div>
+			<div *ngIf="projects?.length <= 0">
+				Keine Projekte vorhanden
+			</div>
+		</div>
+			<div class="col-md-6">
+	    <div *ngIf="selectedProject">
+  			<h2>
+    			{{selectedProject.name}}
+  			</h2>
+  			<p>{{selectedProject.beschreibung}}</p>
+  			<button type="button" class="btn btn-default" (click)="gotoStructure()">Struktur</button>
+  			<button type="button" class="btn btn-default" (click)="gotoPrioritisation()">Priorisierungen</button>
+  			<button type="button" class="btn btn-danger" (click)="delete()">Delete</button>
+		</div>
+	</div>
+	</div>
+		<div class="row">
+		<div class="col-md-6">
+			<h2>Neues Projekt anlegen</h2>
+			<form name="form" (ngSubmit)="f.form.valid && add(); f.form.reset()" #f="ngForm" novalidate >
+				<div class="form-group" [ngClass]="{ 'has-error': f.submitted && !name.valid }">
+			    	<label for="name">Name</label>
+			        <input type="text" class="form-control" name="name" [(ngModel)]="model.name" #name="ngModel" required />
+			        <div *ngIf="f.submitted && !name.valid" class="help-block">Name is required</div>
+			    </div>
+			    <div class="form-group" [ngClass]="{ 'has-error': f.submitted && !beschreibung.valid }">
+			        <label for="beschreibung">Beschreibung</label>
+			        <textarea class="form-control" name="beschreibung" [(ngModel)]="model.beschreibung" #beschreibung="ngModel"></textarea>		            
+			    </div>
+		        <div class="form-group">
+			        <button [disabled]="loading" class="btn btn-primary">Create Project</button>
+			        <img *ngIf="loading" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" />
+			            <a [routerLink]="['/']" class="btn btn-link">Cancel</a>
+			    </div>
+			</form>
+		</div>
+	</div>
+
+</div>

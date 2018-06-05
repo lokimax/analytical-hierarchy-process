@@ -1,0 +1,39 @@
+<div class="row">
+	<div class="col-md-12">
+		<h2>Verbindungen</h2>
+		<div *ngIf="connections?.length > 0">
+			<div class="list-group">
+				<a class="list-group-item" *ngFor="let connection of connections" [class.active]="connection === selectedConnection"
+					(click)="onSelect(connection)">
+					<h4 class="list-group-item-heading">{{connection.sourcenode}} - {{connection.targetnode}}</h4>
+				</a>
+			</div>
+		</div>
+		<div *ngIf="connections?.length <= 0">Keine Verbindungen vorhanden.</div>
+	</div>
+</div>
+<div class="row" *ngIf="nodes?.length >= 2">
+	<div class="col-md-12">
+		<h2 *ngIf="selectedConnection==null">Verbindung erstellen</h2>
+		<h2 *ngIf="selectedConnection!=null">Verbindung editieren</h2>
+		<div class="col-md-5">
+			<label for="source">Start</label> 
+			<select #sourceBox class="form-control" name="source">
+				<option *ngFor="let node of nodes" value="{{node.name}}" [selected]="isSourceSelected(node)">{{node.name}}</option>
+			</select>
+		</div>
+		<div class="col-md-5">
+			<label for="target">Ziel</label> 
+			<select #targetBox class="form-control" name="target">
+				<option *ngFor="let node of nodes" value="{{node.name}}" [selected]="isTargetSelected(node)">{{node.name}}</option>
+			</select>
+		</div>
+		<div class="col-md-2">
+			<label for="submit"></label>
+			<button [disabled]="loading" class="btn btn-primary" (click)="createNewConnection(sourceBox.value, targetBox.value)" *ngIf="selectedConnection==null">Hinzuf&uuml;gen</button>
+			<button [disabled]="loading" class="btn btn-danger" (click)="deleteConnection(sourceBox.value, targetBox.value)" *ngIf="selectedConnection!=null">L&ouml;schen</button>				
+			<img *ngIf="loading"
+				src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" />
+		</div>
+	</div>
+</div>

@@ -1,0 +1,61 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+
+# DashBoard
+GET		/																						de.x132.dashboard.controller.StartPageController.index()
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+# Benutzercontroller
+GET			/activate/:activationCode                   de.x132.user.controller.UserController.activate(activationCode: String)
+GET		  	/rest/api/1/users							de.x132.user.controller.UserController.list(page: Int ?= 1 , size: Int ?= 1000)
+GET	  		/rest/api/1/users/:nickname         		de.x132.user.controller.UserController.get(nickname: String)
+POST		/rest/api/1/users/							de.x132.user.controller.UserController.create()
+PUT			/rest/api/1/users/							de.x132.user.controller.UserController.update()
+DELETE	  	/rest/api/1/users/:nickname        			de.x132.user.controller.UserController.delete(nickname: String)
+GET			/rest/api/1/users/login/			 		de.x132.user.controller.UserController.login()
+GET			/rest/api/1/users/logout/			  		de.x132.user.controller.UserController.logout()
+	
+# Projektcontroller
+GET			/rest/api/1/projects         				de.x132.project.controller.ProjectController.list(page: Int ?= 1 , size: Int ?= 100)
+POST		/rest/api/1/projects/						de.x132.project.controller.ProjectController.create()
+PUT			/rest/api/1/projects/:projectname			de.x132.project.controller.ProjectController.update(projectname: String)
+DELETE		/rest/api/1/projects/:projectname			de.x132.project.controller.ProjectController.delete(projectname: String)
+GET			/rest/api/1/projects/:projectname			de.x132.project.controller.ProjectController.get(projectname: String)
+
+# Node 
+GET			/rest/api/1/projects/:projectname/nodes			de.x132.node.controller.NodeController.list(projectname: String, page: Int ?= 1 , size: Int ?= 100)
+GET			/rest/api/1/projects/:projectname/nodes/:name	de.x132.node.controller.NodeController.get(projectname: String, name: String)
+POST		/rest/api/1/projects/:projectname/nodes/		de.x132.node.controller.NodeController.create(projectname: String)
+PUT			/rest/api/1/projects/:projectname/nodes/:name	de.x132.node.controller.NodeController.update(projectname: String, name: String)
+DELETE		/rest/api/1/projects/:projectname/nodes/:name	de.x132.node.controller.NodeController.delete(projectname: String, name: String)
+
+# Connection
+GET			/rest/api/1/projects/:projectname/connections									de.x132.connection.controller.ConnectionController.list(projectname: String, page: Int ?= 1 , size: Int ?= 100)
+POST		/rest/api/1/projects/:projectname/connections/									de.x132.connection.controller.ConnectionController.create(projectname: String)
+GET			/rest/api/1/projects/:projectname/nodes/:startnode/connections					de.x132.connection.controller.ConnectionController.getForStartnode(projectname: String, startnode: String)
+GET			/rest/api/1/projects/:projectname/nodes/:startnode/connections/:finishnode		de.x132.connection.controller.ConnectionController.get(projectname: String, startnode: String, finishnode: String)
+DELETE		/rest/api/1/projects/:projectname/nodes/:startnode/connections/:finishnode		de.x132.connection.controller.ConnectionController.delete(projectname: String,startnode: String,finishnode: String)
+
+# Priorization
+GET			/rest/api/1/projects/:projectname/prioritisations					de.x132.prioritisation.controller.PrioritisationController.list(projectname: String, page: Int ?= 1 , size: Int ?= 100)
+POST		/rest/api/1/projects/:projectname/prioritisations/ 					de.x132.prioritisation.controller.PrioritisationController.create(projectname: String)
+GET			/rest/api/1/projects/:projectname/prioritisations/:prioritisation 	de.x132.prioritisation.controller.PrioritisationController.get(projectname: String, prioritisation: String)
+DELETE		/rest/api/1/projects/:projectname/prioritisations/:prioritisation 	de.x132.prioritisation.controller.PrioritisationController.delete(projectname: String, prioritisation: String)
+PUT			/rest/api/1/projects/:projectname/prioritisations/:prioritisation 	de.x132.prioritisation.controller.PrioritisationController.update(projectname: String, prioritisation: String)
+
+# Comparison
+GET			/rest/api/1/projects/:projectname/prioritisations/:prioritisation/comparisons/:parent/:leftnode/:rightnode/		de.x132.comparison.controller.ComparisonController.get(projectname: String, prioritisation: String, parent: String, leftnode: String, rightnode: String)
+PUT 		/rest/api/1/projects/:projectname/prioritisations/:prioritisation/comparisons/									de.x132.comparison.controller.ComparisonController.update(projectname: String, prioritisation: String)
+
+# Results 
+GET			/rest/api/1/projects/:projectname/prioritisations/:prioritisation/results/:parent		de.x132.results.controller.ResultController.getResultsForNode(projectname: String, prioritisation: String, parent: String)
+GET			/rest/api/1/projects/:projectname/prioritisations/:prioritisation/influences/:child		de.x132.results.controller.ResultController.getInfluenceResults(projectname: String, prioritisation: String, child: String)
+GET			/rest/api/1/projects/:projectname/prioritisations/:prioritisation/fullresult			de.x132.results.controller.ResultController.getFullResults(projectname: String, prioritisation: String)
+GET			/rest/api/1/projects/:projectname/prioritisations/:prioritisation/result				de.x132.results.controller.ResultController.getResultsForLeafs(projectname: String, prioritisation: String)
+GET			/rest/api/1/projects/:projectname/prioritisations/:prioritisation/results/:parent/childs de.x132.results.controller.ResultController.getResultsForChilds(projectname: String, prioritisation: String, parent: String)
+
+GET /*others 																	de.x132.dashboard.controller.StartPageController.other(others)

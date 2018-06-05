@@ -1,0 +1,40 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<h2>Priorisierung</h2>
+		</div>
+	</div>
+	<div class="row">
+		<div style="display: block;">
+			Projekt: {{projectname}}<br /> Priorisierung: {{prioritisationame}}<br /> 
+		</div>
+		<div *ngIf="prioritisation">Bewertung Nr.: {{currentIndex}} von {{prioritisation.comparisons.length}} Elemente</div>
+		<div *ngIf="currentComparison" class="col-md-6">
+			<h1>{{currentComparison.parentNodeName}}</h1>
+			<div class="row">
+				<div class="col-md-3">
+					<h3 class="text-center" style="margin-top: 5px">{{currentComparison.rightNodeName}}</h3>
+				</div>
+				<div class="col-md-6">
+					<input type="range" min="-4" max="4" step="1" [(ngModel)]="currentComparison.weight"
+						(ngModelChange)="onChange($event)" />
+				</div>
+				<div class="col-md-3">
+					<h3 class="text-center" style="margin-top: 5px">{{currentComparison.leftNodeName}}</h3>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-3 text-center">
+					<button type="button" class="btn btn-default" (click)="goPrevious()">Previous</button>
+				</div>
+				<div class="col-md-6">
+					<p>Weight: {{currentComparison.weight}} <br/>
+						{{currentText}}
+					</p></div>
+				<div class="col-md-3 text-center">
+					<button type="button" class="btn btn-default" (click)="goNext()">Next</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
