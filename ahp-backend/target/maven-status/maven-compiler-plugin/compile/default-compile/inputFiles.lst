@@ -1,5 +1,13 @@
 /home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/AhpApplication.java
 /home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/config/EmbeddedPostgresConfig.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/config/SecurityConfig.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/config/SolverConfig.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/controller/ClientController.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/controller/ProjectController.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/dto/ClientRegistrationRequest.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/dto/ClientResponse.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/dto/ProjectRequest.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/dto/ProjectResponse.java
 /home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/model/Client.java
 /home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/model/Comparison.java
 /home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/model/Connection.java
@@ -16,3 +24,7 @@
 /home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/repository/PrioritisationRepository.java
 /home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/repository/ProjectRepository.java
 /home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/repository/TokenRepository.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/service/ClientService.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/service/NodeService.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/service/PrioritisationService.java
+/home/max/Dokumente/Projects/10_MasterThesisAHP/ahp-backend/src/main/java/de/x132/ahp/service/ProjectService.java
