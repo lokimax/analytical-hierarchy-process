@@ -31,7 +31,6 @@
         
         <!-- Database -->
         <postgresql.version>42.7.1</postgresql.version>
-        <hibernate.version>6.4.1.Final</hibernate.version>
         
         <!-- Apache Commons -->
         <commons-math3.version>3.6.1</commons-math3.version>
@@ -69,12 +68,6 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-entitymanager</artifactId>
-                <version>${hibernate.version}</version>
             </dependency>
 
             <!-- Apache Commons -->

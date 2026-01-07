@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: ahp-backend
+  
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ahp_db
+    username: ahp_user
+    password: ahp_pass
+    
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        
+  sql:
+    init:
+      mode: always
+
+server:
+  port: 9000
+  
+logging:
+  level:
+    de.x132.ahp: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

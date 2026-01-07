@@ -1,0 +1,29 @@
+package de.x132.ahp.repository;
+
+import de.x132.ahp.model.Project;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Spring Data JPA Repository for Project entity.
+ *
+ * @author Max Wick
+ */
+@Repository
+public interface ProjectRepository extends JpaRepository<Project, Long> {
+
+    @Query("SELECT p FROM Project p WHERE p.client.nickname = :nickname")
+    List<Project> findAllByClientNickname(@Param("nickname") String nickname);
+
+    @Query("SELECT p FROM Project p WHERE p.client.nickname = :nickname AND p.name = :projectName")
+    Optional<Project> findByClientNicknameAndName(@Param("nickname") String nickname, @Param("projectName") String projectName);
+
+    List<Project> findAllByClientId(Long clientId);
+
+    boolean existsByClientIdAndName(Long clientId, String name);
+}
