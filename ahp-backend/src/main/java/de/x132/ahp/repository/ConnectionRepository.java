@@ -16,6 +16,12 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
 
     List<Connection> findAllByProjectId(Long projectId);
 
+    List<Connection> findAllByProject(de.x132.ahp.model.Project project);
+
+    List<Connection> findAllBySourceNode(de.x132.ahp.model.Node sourceNode);
+
+    List<Connection> findAllByTargetNode(de.x132.ahp.model.Node targetNode);
+
     List<Connection> findAllBySourceNodeId(Long sourceNodeId);
 
     List<Connection> findAllByTargetNodeId(Long targetNodeId);

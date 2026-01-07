@@ -18,6 +18,8 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
 
     Optional<Token> findByToken(String token);
 
+    List<Token> findAllByExpiresAtBefore(LocalDateTime dateTime);
+
     List<Token> findAllByClientId(Long clientId);
 
     void deleteByToken(String token);

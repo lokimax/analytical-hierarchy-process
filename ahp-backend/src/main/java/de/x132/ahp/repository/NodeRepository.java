@@ -17,6 +17,10 @@ import java.util.Optional;
 @Repository
 public interface NodeRepository extends JpaRepository<Node, Long> {
 
+    List<Node> findAllByProject(de.x132.ahp.model.Project project);
+
+    Optional<Node> findByProjectAndName(de.x132.ahp.model.Project project, String name);
+
     @Query("SELECT n FROM Node n WHERE n.project.client.nickname = :nickname AND n.project.name = :projectName")
     List<Node> findAllByProjectClientNicknameAndProjectName(@Param("nickname") String nickname, @Param("projectName") String projectName);
 

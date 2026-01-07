@@ -17,6 +17,10 @@ import java.util.Optional;
 @Repository
 public interface ComparisonRepository extends JpaRepository<Comparison, Long> {
 
+    List<Comparison> findAllByPrioritisation(de.x132.ahp.model.Prioritisation prioritisation);
+
+    List<Comparison> findAllByParent(de.x132.ahp.model.Node parent);
+
     @Query("SELECT c FROM Comparison c WHERE c.prioritisation.project.client.nickname = :nickname " +
             "AND c.prioritisation.project.name = :projectName " +
             "AND c.prioritisation.name = :prioritisationName " +

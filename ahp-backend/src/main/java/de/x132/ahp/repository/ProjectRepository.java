@@ -25,5 +25,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     List<Project> findAllByClientId(Long clientId);
 
+    List<Project> findAllByClient(de.x132.ahp.model.Client client);
+
+    Optional<Project> findByClientAndName(de.x132.ahp.model.Client client, String name);
+
     boolean existsByClientIdAndName(Long clientId, String name);
 }
