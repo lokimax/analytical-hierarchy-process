@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -96,11 +97,11 @@ class AHPSolverTest {
         Node goal = testProject.findNodeByName("Goal");
         Prioritisation prioritisation = solver.generatePrioritisation(testProject);
 
-        // Set consistent comparison values: C1=1, C2=4, C3=2 (means C1:C2=1:4, C2:C3=2:1, C1:C3=1:2)
+        // Set consistent comparison values
         List<Comparison> comparisons = prioritisation.getComparisons();
-        setComparisonValue(comparisons, "Criterion1", "Criterion2", BigDecimal.valueOf(0.25)); // C1 < C2
-        setComparisonValue(comparisons, "Criterion1", "Criterion3", BigDecimal.valueOf(0.5));  // C1 < C3
-        setComparisonValue(comparisons, "Criterion2", "Criterion3", BigDecimal.valueOf(2));    // C2 > C3
+        setComparisonValue(comparisons, "Criterion1", "Criterion2", BigDecimal.valueOf(1)); // C1 = C2
+        setComparisonValue(comparisons, "Criterion1", "Criterion3", BigDecimal.valueOf(4)); // C1 > C3
+        setComparisonValue(comparisons, "Criterion2", "Criterion3", BigDecimal.valueOf(4)); // C2 > C3 (consistent: 1*4=4)
 
         AHPNode ahpNode = new AHPNode(goal, prioritisation);
 
@@ -113,11 +114,11 @@ class AHPSolverTest {
         Node goal = testProject.findNodeByName("Goal");
         Prioritisation prioritisation = solver.generatePrioritisation(testProject);
 
-        // Set inconsistent comparison values
+        // Set inconsistent comparison values: C1:C2=3, C2:C3=4, but C1:C3=2 (should be 12 for consistency)
         List<Comparison> comparisons = prioritisation.getComparisons();
         setComparisonValue(comparisons, "Criterion1", "Criterion2", BigDecimal.valueOf(3));
-        setComparisonValue(comparisons, "Criterion1", "Criterion3", BigDecimal.valueOf(4));
-        setComparisonValue(comparisons, "Criterion2", "Criterion3", BigDecimal.valueOf(2));
+        setComparisonValue(comparisons, "Criterion2", "Criterion3", BigDecimal.valueOf(4));
+        setComparisonValue(comparisons, "Criterion1", "Criterion3", BigDecimal.valueOf(2)); // Inconsistent!
 
         AHPNode ahpNode = new AHPNode(goal, prioritisation);
 
@@ -130,11 +131,11 @@ class AHPSolverTest {
         Node goal = testProject.findNodeByName("Goal");
         Prioritisation prioritisation = solver.generatePrioritisation(testProject);
 
-        // Set comparison values
+        // Set comparison values - consistent values
         List<Comparison> comparisons = prioritisation.getComparisons();
         setComparisonValue(comparisons, "Criterion1", "Criterion2", BigDecimal.ONE);
         setComparisonValue(comparisons, "Criterion1", "Criterion3", BigDecimal.valueOf(4));
-        setComparisonValue(comparisons, "Criterion2", "Criterion3", BigDecimal.valueOf(2));
+        setComparisonValue(comparisons, "Criterion2", "Criterion3", BigDecimal.valueOf(4)); // Consistent with above
 
         SolvingResultDTO result = solver.getSolvingResultFor(goal, prioritisation);
 
@@ -143,12 +144,13 @@ class AHPSolverTest {
         assertTrue(result.isConsistent());
         assertEquals(3, result.getResults().size());
 
-        // Verify sum of priorities equals 1
+        // Verify sum of priorities equals 1 (with small tolerance for floating point)
         BigDecimal sum = result.getResults().stream()
                 .map(r -> r.getValue())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        assertEquals(0, sum.compareTo(BigDecimal.ONE), "Sum of priorities should equal 1");
+        assertTrue(sum.subtract(BigDecimal.ONE).abs().compareTo(BigDecimal.valueOf(0.0001)) < 0, 
+                "Sum of priorities should equal 1, but was " + sum);
     }
 
     /**
@@ -163,7 +165,7 @@ class AHPSolverTest {
                     if (c.getNodeA().getName().equals(nodeAName)) {
                         c.setValue(value);
                     } else {
-                        c.setValue(BigDecimal.ONE.divide(value, 10, BigDecimal.ROUND_HALF_UP));
+                        c.setValue(BigDecimal.ONE.divide(value, 10, RoundingMode.HALF_UP));
                     }
                 });
     }

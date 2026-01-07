@@ -1,0 +1,17 @@
+de/x132/ahp/core/dto/SingleResult.class
+de/x132/ahp/core/dto/FullResultDTO$FullResultDTOBuilder.class
+de/x132/ahp/core/model/Prioritisation$PrioritisationBuilder.class
+de/x132/ahp/core/model/Comparison.class
+de/x132/ahp/core/dto/SolvingResultDTO$SolvingResultDTOBuilder.class
+de/x132/ahp/core/solver/Solver.class
+de/x132/ahp/core/dto/SingleResult$SingleResultBuilder.class
+de/x132/ahp/core/dto/FullResultDTO.class
+de/x132/ahp/core/model/Prioritisation.class
+de/x132/ahp/core/solver/AHPSolver.class
+de/x132/ahp/core/solver/AHPNode.class
+de/x132/ahp/core/model/Node.class
+de/x132/ahp/core/model/Project$ProjectBuilder.class
+de/x132/ahp/core/dto/SolvingResultDTO.class
+de/x132/ahp/core/model/Node$NodeBuilder.class
+de/x132/ahp/core/model/Project.class
+de/x132/ahp/core/model/Comparison$ComparisonBuilder.class

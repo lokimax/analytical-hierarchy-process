@@ -192,16 +192,25 @@ public class AHPNode {
     private Array2DRowFieldMatrix<BigReal> createEvolutionMatrix(List<Comparison> compares) {
         BigReal[][] weightMatrix = new BigReal[childList.size()][childList.size()];
 
+        // Initialize all elements with 0 first
+        for (int i = 0; i < childList.size(); i++) {
+            for (int j = 0; j < childList.size(); j++) {
+                weightMatrix[i][j] = BigReal.ZERO;
+            }
+        }
+
+        // Set diagonal to 1
+        for (int i = 0; i < childList.size(); i++) {
+            weightMatrix[i][i] = BigReal.ONE;
+        }
+
+        // Fill in comparison values
         compares.forEach(comparison -> {
             int rowIndex = childList.indexOf(comparison.getNodeA());
             int columnIndex = childList.indexOf(comparison.getNodeB());
 
             BigDecimal value = comparison.getValue();
             BigDecimal reciprocal = comparison.getReciprocalValue();
-
-            // Diagonal elements are 1
-            weightMatrix[rowIndex][rowIndex] = new BigReal(1);
-            weightMatrix[columnIndex][columnIndex] = new BigReal(1);
 
             // Set comparison values
             weightMatrix[rowIndex][columnIndex] = new BigReal(value);

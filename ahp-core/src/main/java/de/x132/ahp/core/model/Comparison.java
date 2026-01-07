@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Represents a pairwise comparison between two nodes in AHP.
@@ -71,6 +72,6 @@ public class Comparison {
      * @return the reciprocal comparison value
      */
     public BigDecimal getReciprocalValue() {
-        return BigDecimal.ONE.divide(value, 10, BigDecimal.ROUND_HALF_UP);
+        return BigDecimal.ONE.divide(value, 10, RoundingMode.HALF_UP);
     }
 }
