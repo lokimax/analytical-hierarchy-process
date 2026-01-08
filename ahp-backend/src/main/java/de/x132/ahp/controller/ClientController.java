@@ -1,7 +1,9 @@
 package de.x132.ahp.controller;
 
+import de.x132.ahp.dto.AuthResponse;
 import de.x132.ahp.dto.ClientRegistrationRequest;
 import de.x132.ahp.dto.ClientResponse;
+import de.x132.ahp.dto.LoginRequest;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.service.ClientService;
 import jakarta.validation.Valid;
@@ -46,6 +48,25 @@ public class ClientController {
         Client savedClient = clientService.registerClient(client);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(mapToResponse(savedClient));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        boolean authenticated = clientService.authenticate(request.getNickname(), request.getPassword());
+        
+        if (!authenticated) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Client client = clientService.findByNickname(request.getNickname())
+                .orElseThrow(() -> new RuntimeException("Client not found"));
+
+        AuthResponse response = AuthResponse.builder()
+                .user(mapToResponse(client))
+                .token(null) // Token generation can be added later if needed
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/activate")

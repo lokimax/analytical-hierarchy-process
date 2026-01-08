@@ -7,13 +7,13 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="row">
-      <div class="col-md-8">
-        <h1>About AHP</h1>
-        <p>
+      <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">About AHP</h1>
+        <p class="lead">
           The Analytical Hierarchy Process (AHP) is a multi-criteria decision-making approach 
           developed by Thomas L. Saaty in the late 1970s.
         </p>
-        <h3>Key Features</h3>
+        <h3 class="mt-5 mb-3">Key Features</h3>
         <ul class="list-group">
           <li class="list-group-item">Hierarchical problem decomposition</li>
           <li class="list-group-item">Pairwise comparison of alternatives</li>
@@ -23,17 +23,7 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-  styles: [`
-    h1 {
-      color: #333;
-      margin-bottom: 2rem;
-    }
-    
-    h3 {
-      color: #555;
-      margin-top: 2rem;
-      margin-bottom: 1rem;
-    }
-  `]
+  styles: []
 })
 export class AboutComponent {}
+

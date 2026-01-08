@@ -1,17 +1,13 @@
-/* AppComponent Styles */
 :host {
   display: block;
 }
 
-.container-fluid {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
 nav {
   box-shadow: 0 2px 4px rgba(0,0,0,.1);
-  margin-bottom: 2rem;
+}
+
+main {
+  flex-grow: 1;
 }
 
 main {
