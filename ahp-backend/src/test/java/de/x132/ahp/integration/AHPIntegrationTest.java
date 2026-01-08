@@ -164,21 +164,25 @@ public class AHPIntegrationTest {
 
         // Verify results
         assertNotNull(result, "Result should not be null");
-        assertNotNull(result.getResults(), "Results list should not be null");
-        assertFalse(result.getResults().isEmpty(), "Results should contain elements");
+        assertNotNull(result.getNodeResults(), "Results list should not be null");
+        assertFalse(result.getNodeResults().isEmpty(), "Results should contain elements");
+
+        // Extract single results from the first solving result
+        List<SingleResult> singleResults = result.getNodeResults().get(0).getResults();
+        assertNotNull(singleResults, "Single results should not be null");
 
         // Find priority for each alternative
-        SingleResult resultA = result.getResults().stream()
+        SingleResult resultA = singleResults.stream()
                 .filter(r -> "Alternative A".equals(r.getNodeName()))
                 .findFirst()
                 .orElse(null);
 
-        SingleResult resultB = result.getResults().stream()
+        SingleResult resultB = singleResults.stream()
                 .filter(r -> "Alternative B".equals(r.getNodeName()))
                 .findFirst()
                 .orElse(null);
 
-        SingleResult resultC = result.getResults().stream()
+        SingleResult resultC = singleResults.stream()
                 .filter(r -> "Alternative C".equals(r.getNodeName()))
                 .findFirst()
                 .orElse(null);
@@ -188,25 +192,25 @@ public class AHPIntegrationTest {
         assertNotNull(resultC, "Result for Alternative C should exist");
 
         // Verify priorities are calculated (exact values depend on AHP algorithm)
-        assertNotNull(resultA.getPriority(), "Priority for A should not be null");
-        assertNotNull(resultB.getPriority(), "Priority for B should not be null");
-        assertNotNull(resultC.getPriority(), "Priority for C should not be null");
+        assertNotNull(resultA.getValue(), "Priority for A should not be null");
+        assertNotNull(resultB.getValue(), "Priority for B should not be null");
+        assertNotNull(resultC.getValue(), "Priority for C should not be null");
 
         // Verify consistency
-        assertTrue(result.isConsistent(), "Result should be consistent");
+        assertTrue(result.isOverallConsistent(), "Result should be consistent");
 
         // Verify alternative A has highest priority (based on our comparisons)
-        assertTrue(resultA.getPriority().compareTo(resultB.getPriority()) > 0,
+        assertTrue(resultA.getValue().compareTo(resultB.getValue()) > 0,
                 "Alternative A should have higher priority than B");
-        assertTrue(resultA.getPriority().compareTo(resultC.getPriority()) > 0,
+        assertTrue(resultA.getValue().compareTo(resultC.getValue()) > 0,
                 "Alternative A should have higher priority than C");
-        assertTrue(resultB.getPriority().compareTo(resultC.getPriority()) > 0,
+        assertTrue(resultB.getValue().compareTo(resultC.getValue()) > 0,
                 "Alternative B should have higher priority than C");
 
         // Verify sum of priorities is approximately 1.0
-        BigDecimal sum = resultA.getPriority()
-                .add(resultB.getPriority())
-                .add(resultC.getPriority());
+        BigDecimal sum = resultA.getValue()
+                .add(resultB.getValue())
+                .add(resultC.getValue());
         assertEquals(0, BigDecimal.ONE.compareTo(sum),
                 "Sum of priorities should be 1.0");
     }
@@ -255,13 +259,16 @@ public class AHPIntegrationTest {
 
         // Verify results
         assertNotNull(result, "Result should not be null");
-        assertTrue(result.isConsistent(), "Equal weights should always be consistent");
+        assertTrue(result.isOverallConsistent(), "Equal weights should always be consistent");
+
+        // Extract single results from the first solving result
+        List<SingleResult> singleResults = result.getNodeResults().get(0).getResults();
 
         // All alternatives should have equal priority (approximately 1/3)
-        for (SingleResult sr : result.getResults()) {
+        for (SingleResult sr : singleResults) {
             if (!sr.getNodeName().equals("Goal")) {
                 BigDecimal expected = new BigDecimal("0.333");
-                BigDecimal actual = sr.getPriority();
+                BigDecimal actual = sr.getValue();
                 assertTrue(actual.subtract(expected).abs().compareTo(new BigDecimal("0.01")) < 0,
                         "Priority for " + sr.getNodeName() + " should be approximately 1/3");
             }
