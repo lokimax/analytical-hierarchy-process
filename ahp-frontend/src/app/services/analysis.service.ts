@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from './auth.service';
 
 export interface Analysis {
   id?: number;
   name: string;
   beschreibung?: string;
+  projectId?: number;
   criteriaComparisons?: string;
   alternativeComparisons?: string;
   results?: string;
@@ -19,31 +19,23 @@ export interface Analysis {
   providedIn: 'root'
 })
 export class AnalysisService {
-  private baseUrl = 'http://localhost:9000/api/clients';
+  private apiUrl = 'http://localhost:9000/api/projects';
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService
-  ) {}
-
-  private getApiUrl(projectName: string): string {
-    const user = this.authService.getCurrentUser()();
-    return `${this.baseUrl}/${user?.nickname}/projects/${projectName}/analyses`;
-  }
+  constructor(private http: HttpClient) {}
 
   getAnalyses(projectName: string): Observable<Analysis[]> {
-    return this.http.get<Analysis[]>(this.getApiUrl(projectName));
+    return this.http.get<Analysis[]>(`${this.apiUrl}/${projectName}/analyses`);
   }
 
   getAnalysis(projectName: string, analysisId: number): Observable<Analysis> {
-    return this.http.get<Analysis>(`${this.getApiUrl(projectName)}/${analysisId}`);
+    return this.http.get<Analysis>(`${this.apiUrl}/${projectName}/analyses/${analysisId}`);
   }
 
   createAnalysis(projectName: string, analysis: Analysis): Observable<Analysis> {
-    return this.http.post<Analysis>(this.getApiUrl(projectName), analysis);
+    return this.http.post<Analysis>(`${this.apiUrl}/${projectName}/analyses`, analysis);
   }
 
   deleteAnalysis(projectName: string, analysisId: number): Observable<void> {
-    return this.http.delete<void>(`${this.getApiUrl(projectName)}/${analysisId}`);
+    return this.http.delete<void>(`${this.apiUrl}/${projectName}/analyses/${analysisId}`);
   }
 }

@@ -1,56 +1,43 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from './auth.service';
 
 export interface Project {
   id?: number;
   name: string;
   beschreibung: string;
   clientId?: number;
+  clientNickname?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProjectService {
-  private baseUrl = 'http://localhost:9000/api/clients';
+  private apiUrl = 'http://localhost:9000/api/projects';
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService
-  ) {}
-
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getAuthToken();
-    return new HttpHeaders({
-      'Authorization': token || ''
-    });
-  }
-
-  private getApiUrl(): string {
-    const user = this.authService.getCurrentUser()();
-    return `${this.baseUrl}/${user?.nickname}/projects`;
-  }
+  constructor(private http: HttpClient) {}
 
   getProjects(): Observable<Project[]> {
-    return this.http.get<Project[]>(this.getApiUrl(), { headers: this.getHeaders() });
+    return this.http.get<Project[]>(this.apiUrl);
   }
 
-  getProject(id: number): Observable<Project> {
-    return this.http.get<Project>(`${this.getApiUrl()}/${id}`, { headers: this.getHeaders() });
+  getProject(name: string): Observable<Project> {
+    return this.http.get<Project>(`${this.apiUrl}/${name}`);
   }
 
   createProject(project: Project): Observable<Project> {
-    return this.http.post<Project>(this.getApiUrl(), project, { headers: this.getHeaders() });
+    return this.http.post<Project>(this.apiUrl, project);
   }
 
   updateProject(id: number, project: Project): Observable<Project> {
-    return this.http.put<Project>(`${this.getApiUrl()}/${id}`, project, { headers: this.getHeaders() });
+    return this.http.put<Project>(`${this.apiUrl}/${id}`, project);
   }
 
   deleteProject(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.getApiUrl()}/${id}`, { headers: this.getHeaders() });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
 
