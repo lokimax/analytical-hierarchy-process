@@ -281,9 +281,9 @@ import { Chart, ChartConfiguration, registerables } from 'chart.js';
             </div>
 
             <!-- Pairwise Comparison -->
-            <div *ngIf="phase() === 3" class="card mb-4">
+            <div *ngIf="phase() < 3" class="card mb-4">
               <div class="card-header bg-success text-white">
-                <h4 class="mb-0"><i class="bi bi-trophy"></i> AHP Analysis Results</h4>
+                <h4 class="mb-0"><i class="bi bi-shuffle"></i> Pairwise Comparisons</h4>
               </div>
               <div class="card-body">
                 <div class="alert" [ngClass]="getConsistencyAlertClass(criteriaConsistency().cr)">
@@ -437,10 +437,10 @@ export class AnalysisComponent implements OnInit {
     { value: 5, label: '5', description: 'Strong importance', direction: 'left' },
     { value: 3, label: '3', description: 'Moderate importance', direction: 'left' },
     { value: 1, label: '1', description: 'Equal importance', direction: 'equal' },
-    { value: 3, label: '3', description: 'Moderate importance', direction: 'right' },
-    { value: 5, label: '5', description: 'Strong importance', direction: 'right' },
-    { value: 7, label: '7', description: 'Very strong importance', direction: 'right' },
-    { value: 9, label: '9', description: 'Extreme importance', direction: 'right' }
+    { value: 1 / 3, label: '3', description: 'Moderate importance', direction: 'right' },
+    { value: 1 / 5, label: '5', description: 'Strong importance', direction: 'right' },
+    { value: 1 / 7, label: '7', description: 'Very strong importance', direction: 'right' },
+    { value: 1 / 9, label: '9', description: 'Extreme importance', direction: 'right' }
   ];
 
   constructor(
@@ -1050,6 +1050,11 @@ export class AnalysisComponent implements OnInit {
         alternativeScoresObj[key] = value;
       });
 
+      const alternativeConsistencyObj: Record<string, any> = {};
+      this.alternativeConsistency().forEach((value, key) => {
+        alternativeConsistencyObj[key] = value;
+      });
+
       const analysis: Analysis = {
         name: this.analysisName,
         beschreibung: this.analysisDescription,
@@ -1058,7 +1063,9 @@ export class AnalysisComponent implements OnInit {
         results: JSON.stringify({
           criteriaWeights: this.criteriaWeights(),
           alternativeScoresPerCriterion: alternativeScoresObj,
-          finalResults: this.finalResults()
+          finalResults: this.finalResults(),
+          criteriaConsistency: this.criteriaConsistency(),
+          alternativeConsistency: alternativeConsistencyObj
         })
       };
 
@@ -1107,6 +1114,9 @@ export class AnalysisComponent implements OnInit {
         if (analysis.results) {
           const results = JSON.parse(analysis.results);
           this.criteriaWeights.set(results.criteriaWeights);
+          if (results.criteriaConsistency) {
+            this.criteriaConsistency.set(results.criteriaConsistency);
+          }
           
           // Convert object back to Map
           const scoresMap = new Map<string, any>();
@@ -1114,6 +1124,14 @@ export class AnalysisComponent implements OnInit {
             scoresMap.set(key, results.alternativeScoresPerCriterion[key]);
           });
           this.alternativeScoresPerCriterion.set(scoresMap);
+          
+          if (results.alternativeConsistency) {
+            const altConsMap = new Map<string, { ci: number; cr: number; n: number }>();
+            Object.keys(results.alternativeConsistency).forEach(key => {
+              altConsMap.set(key, results.alternativeConsistency[key]);
+            });
+            this.alternativeConsistency.set(altConsMap);
+          }
           
           this.finalResults.set(results.finalResults);
         }
