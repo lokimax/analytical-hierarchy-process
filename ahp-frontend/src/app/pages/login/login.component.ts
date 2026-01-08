@@ -8,70 +8,8 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  template: `
-    <div class="container">
-      <div class="row justify-content-center mt-5">
-        <div class="col-md-6">
-          <div class="card shadow">
-            <div class="card-body p-5">
-              <h2 class="card-title text-center mb-4">Login</h2>
-              
-              <form (ngSubmit)="login()">
-                <div class="mb-3">
-                  <label for="nickname" class="form-label">Nickname</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="nickname"
-                    [(ngModel)]="form.nickname"
-                    name="nickname"
-                    required
-                  >
-                </div>
-
-                <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
-                  <input 
-                    type="password" 
-                    class="form-control" 
-                    id="password"
-                    [(ngModel)]="form.password"
-                    name="password"
-                    required
-                  >
-                </div>
-
-                <div *ngIf="error()" class="alert alert-danger" role="alert">
-                  {{ error() }}
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100 mb-3" [disabled]="isSubmitting()">
-                  <span *ngIf="!isSubmitting()">Login</span>
-                  <span *ngIf="isSubmitting()">
-                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Logging in...
-                  </span>
-                </button>
-              </form>
-
-              <hr>
-              
-              <p class="text-center mb-0">
-                Don't have an account? 
-                <a routerLink="/register" class="btn btn-link p-0">Register here</a>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .card {
-      border-radius: 8px;
-      border: none;
-    }
-  `]
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   form = {

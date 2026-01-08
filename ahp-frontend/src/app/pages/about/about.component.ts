@@ -5,25 +5,8 @@ import { CommonModule } from '@angular/common';
   selector: 'app-about',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="row">
-      <div class="col-md-8 offset-md-2">
-        <h1 class="mb-4">About AHP</h1>
-        <p class="lead">
-          The Analytical Hierarchy Process (AHP) is a multi-criteria decision-making approach 
-          developed by Thomas L. Saaty in the late 1970s.
-        </p>
-        <h3 class="mt-5 mb-3">Key Features</h3>
-        <ul class="list-group">
-          <li class="list-group-item">Hierarchical problem decomposition</li>
-          <li class="list-group-item">Pairwise comparison of alternatives</li>
-          <li class="list-group-item">Consistency analysis</li>
-          <li class="list-group-item">Priority calculation</li>
-        </ul>
-      </div>
-    </div>
-  `,
-  styles: []
+  templateUrl: './about.component.html',
+  styleUrls: ['./about.component.css']
 })
 export class AboutComponent {}
 

@@ -1,0 +1,98 @@
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <h1 class="mb-4">Welcome to Analytical Hierarchy Process</h1>
+    <p class="lead mb-4">This is a modern implementation of the AHP decision-making framework.</p>
+    
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">What is AHP?</h5>
+        <p class="card-text">The Analytical Hierarchy Process is a structured technique for organizing and analyzing complex decisions.</p>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="mb-3">My Projects</h3>
+      
+      <div *ngIf="isLoadingProjects()" class="text-center py-4">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoadingProjects() && projects().length === 0" class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        No projects yet. Create your first project to get started!
+      </div>
+
+      <div *ngIf="!isLoadingProjects() && projects().length > 0" class="list-group mb-4">
+        <button 
+          *ngFor="let project of projects()" 
+          class="list-group-item list-group-item-action"
+          (click)="openProject(project)"
+          style="cursor: pointer;">
+          <div class="d-flex w-100 justify-content-between align-items-center">
+            <div class="flex-grow-1">
+              <h5 class="mb-1">{{ project.name }}</h5>
+              <p class="mb-1 text-muted" *ngIf="project.beschreibung">{{ project.beschreibung }}</p>
+            </div>
+            <div class="d-flex align-items-center">
+              <small class="text-muted me-3">ID: {{ project.id }}</small>
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!showForm()">
+      <button class="btn btn-primary btn-lg" (click)="toggleForm()">Start New Project</button>
+    </div>
+
+    <div *ngIf="showForm()" class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">Create New Project</h5>
+        
+        <div class="mb-3">
+          <label for="projectName" class="form-label">Project Name</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="projectName"
+            [(ngModel)]="projectForm.name"
+            placeholder="Enter project name"
+          >
+        </div>
+
+        <div class="mb-3">
+          <label for="projectDesc" class="form-label">Description</label>
+          <textarea 
+            class="form-control" 
+            id="projectDesc"
+            rows="4"
+            [(ngModel)]="projectForm.beschreibung"
+            placeholder="Enter project description"
+          ></textarea>
+        </div>
+
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+          <button class="btn btn-secondary" (click)="toggleForm()">Cancel</button>
+          <button class="btn btn-primary" (click)="createProject()" [disabled]="isSubmitting()">
+            <span *ngIf="!isSubmitting()">Create Project</span>
+            <span *ngIf="isSubmitting()">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Creating...
+            </span>
+          </button>
+        </div>
+
+        <div *ngIf="error()" class="alert alert-danger mt-3" role="alert">
+          {{ error() }}
+        </div>
+
+        <div *ngIf="success()" class="alert alert-success mt-3" role="alert">
+          {{ success() }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
