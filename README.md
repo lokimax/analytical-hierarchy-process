@@ -1,5 +1,205 @@
-# Analytical Hierarchy Process
-Implementation of the structured technique for organizing and analyzing complex decisions, based on mathematics and psychology. The technique was developed by Thomas L. Saaty in the 1970s and has been extensively studied and refined since then.
+# Analytical Hierarchy Process (AHP)
 
-# How to run
-Execute `sbt run` in the project root.
+Eine Webanwendung zur Entscheidungsfindung mit dem Analytical Hierarchy Process nach Thomas L. Saaty.
+
+## Einführung in AHP
+
+Der Analytical Hierarchy Process (AHP) ist eine strukturierte Technik zur Analyse und Organisation komplexer Entscheidungsprobleme. Die Methode wurde von Thomas L. Saaty in den 1970er Jahren entwickelt und basiert auf mathematischen und psychologischen Prinzipien.
+
+### Funktionsweise
+
+1. **Hierarchische Strukturierung**: Das Entscheidungsproblem wird in eine Hierarchie aus Ziel, Kriterien und Alternativen zerlegt
+2. **Paarweiser Vergleich**: Kriterien und Alternativen werden paarweise miteinander verglichen
+3. **Gewichtung**: Durch die Vergleiche werden relative Gewichte für jedes Element berechnet
+4. **Priorisierung**: Die Methode ermittelt eine Rangfolge der Alternativen basierend auf den gewichteten Kriterien
+
+### Vergleichsskala
+
+Bei paarweisen Vergleichen wird die Saaty-Skala verwendet:
+- **1** - Gleiche Bedeutung
+- **3** - Mäßige Bedeutung
+- **5** - Starke Bedeutung
+- **7** - Sehr starke Bedeutung
+- **9** - Extreme Bedeutung
+- **2, 4, 6, 8** - Zwischenwerte
+
+## Technologie-Stack
+
+- **Backend**: Spring Boot 4.0.1, Java 21, Maven
+- **Frontend**: Angular 18 (Standalone Components)
+- **Datenbank**: H2 (In-Memory für Entwicklung)
+- **Sicherheit**: JWT-basierte Authentifizierung mit Spring Security
+
+## Installation
+
+### Voraussetzungen
+
+- **Java 21** oder höher
+- **Maven 3.9+**
+- **Node.js 18+** und **npm**
+- **Git**
+
+### Repository klonen
+
+```bash
+git clone https://github.com/lokimax/analytical-hierarchy-process.git
+cd analytical-hierarchy-process
+```
+
+### Backend-Abhängigkeiten installieren
+
+```bash
+cd ahp-backend
+mvn clean install
+cd ..
+```
+
+### Frontend-Abhängigkeiten installieren
+
+```bash
+cd ahp-frontend
+npm install
+cd ..
+```
+
+## Anwendung starten
+
+### Backend starten
+
+Öffnen Sie ein Terminal und führen Sie aus:
+
+```bash
+cd ahp-backend
+mvn spring-boot:run -DskipTests
+```
+
+Das Backend läuft auf **http://localhost:9000**
+
+### Frontend starten
+
+Öffnen Sie ein zweites Terminal und führen Sie aus:
+
+```bash
+cd ahp-frontend
+ng serve
+```
+
+Das Frontend läuft auf **http://localhost:4200**
+
+Die Anwendung öffnet sich automatisch im Browser.
+
+## Durchführung eines Vergleichs
+
+### 1. Registrierung und Anmeldung
+
+- Öffnen Sie **http://localhost:4200** im Browser
+- Klicken Sie auf **"Register"**
+- Erstellen Sie einen Account mit Benutzername und Passwort
+- Melden Sie sich mit Ihren Zugangsdaten an
+
+### 2. Projekt erstellen
+
+- Klicken Sie auf **"New Project"**
+- Geben Sie einen Projektnamen ein (z.B. "Auto-Auswahl")
+- Fügen Sie eine Beschreibung hinzu
+- Speichern Sie das Projekt
+
+### 3. Hierarchie aufbauen
+
+#### Kriterien definieren
+- Wechseln Sie zur **"Nodes"**-Ansicht
+- Erstellen Sie Kriterien als Knoten (z.B. "Preis", "Sicherheit", "Verbrauch", "Komfort")
+- Definieren Sie Unterkriterien falls nötig (hierarchische Struktur möglich)
+
+#### Alternativen definieren
+- Erstellen Sie Blattknoten für die zu bewertenden Alternativen (z.B. "Auto A", "Auto B", "Auto C")
+
+#### Verbindungen erstellen
+- Wechseln Sie zur **"Connections"**-Ansicht
+- Verbinden Sie Kriterien mit den Alternativen
+- Die Verbindungen definieren, welche Alternativen nach welchen Kriterien bewertet werden
+
+### 4. Paarweise Vergleiche durchführen
+
+- Wechseln Sie zur **"Analysis"**-Ansicht
+- Erstellen Sie eine neue Analyse
+- Das System führt Sie durch die paarweisen Vergleiche:
+
+#### Kriterienvergleich
+- Vergleichen Sie jeweils zwei Kriterien miteinander
+- Frage: "Wie wichtig ist Kriterium A im Vergleich zu Kriterium B?"
+- Nutzen Sie den Schieberegler (1-9 Skala)
+
+#### Alternativenvergleich
+- Für jedes Kriterium: Vergleichen Sie die Alternativen paarweise
+- Frage: "Wie gut schneidet Alternative A bei Kriterium X im Vergleich zu Alternative B ab?"
+
+### 5. Ergebnisse anzeigen
+
+- Nach Abschluss aller Vergleiche werden die Ergebnisse automatisch berechnet
+- Die **"Results"**-Ansicht zeigt:
+  - **Gewichtungen der Kriterien** (in Prozent)
+  - **Bewertungen der Alternativen** für jedes Kriterium
+  - **Gesamtranking** der Alternativen
+  - **Spider-Chart** zur visuellen Darstellung der Alternativenbewertung
+  - **Konsistenzindex (CI)** zur Überprüfung der Vergleichsqualität
+
+### 6. Konsistenz prüfen
+
+Ein wichtiger Aspekt der AHP-Methode ist die Konsistenzprüfung:
+- **CI < 0.1**: Vergleiche sind konsistent und akzeptabel
+- **CI > 0.1**: Vergleiche sollten überprüft und ggf. angepasst werden
+
+Bei inkonsistenten Vergleichen können Sie die Analyse wiederholen und Anpassungen vornehmen.
+
+## Architektur
+
+### Backend-Module
+
+- **ahp-core**: Kernalgorithmus für AHP-Berechnungen mit Apache Commons Math
+- **ahp-backend**: REST API, Authentifizierung, Datenverwaltung
+
+### Frontend-Struktur
+
+- **Standalone Components**: Moderne Angular 18 Architektur
+- **Reactive Forms mit Signals**: Typsichere Formularverarbeitung
+- **JWT-Authentifizierung**: Sichere Client-Server-Kommunikation
+- **Bootstrap 5 UI**: Responsive Design
+
+## Entwicklung
+
+### Tests ausführen
+
+Backend-Tests:
+```bash
+cd ahp-backend
+mvn test
+```
+
+Frontend-Tests:
+```bash
+cd ahp-frontend
+npm test
+```
+
+### Build für Produktion
+
+Backend:
+```bash
+cd ahp-backend
+mvn clean package
+```
+
+Frontend:
+```bash
+cd ahp-frontend
+ng build --configuration production
+```
+
+## Lizenz
+
+Siehe [LICENSE](LICENSE) Datei.
+
+## Autor
+
+Master Thesis Projekt - Analytical Hierarchy Process Implementation
