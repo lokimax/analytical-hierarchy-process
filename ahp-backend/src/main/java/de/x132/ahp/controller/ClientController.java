@@ -5,14 +5,18 @@ import de.x132.ahp.dto.ClientRegistrationRequest;
 import de.x132.ahp.dto.ClientResponse;
 import de.x132.ahp.dto.LoginRequest;
 import de.x132.ahp.model.Client;
+import de.x132.ahp.model.Token;
+import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.ClientService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,9 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ClientController {
 
     private final ClientService clientService;
+    private final AuthenticationService authenticationService;
 
-    public ClientController(ClientService clientService) {
+    public ClientController(ClientService clientService, AuthenticationService authenticationService) {
         this.clientService = clientService;
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/register")
@@ -52,21 +58,30 @@ public class ClientController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        boolean authenticated = clientService.authenticate(request.getNickname(), request.getPassword());
-        
-        if (!authenticated) {
+        try {
+            String tokenValue = authenticationService.login(request.getNickname(), request.getPassword());
+            
+            Client client = clientService.findByNickname(request.getNickname())
+                    .orElseThrow(() -> new RuntimeException("Client not found"));
+
+            AuthResponse response = AuthResponse.builder()
+                    .token(tokenValue)
+                    .nickname(client.getNickname())
+                    .name(client.getName())
+                    .surename(client.getSurename())
+                    .email(client.getEmail())
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
 
-        Client client = clientService.findByNickname(request.getNickname())
-                .orElseThrow(() -> new RuntimeException("Client not found"));
-
-        AuthResponse response = AuthResponse.builder()
-                .user(mapToResponse(client))
-                .token(null) // Token generation can be added later if needed
-                .build();
-
-        return ResponseEntity.ok(response);
+    @DeleteMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("X-Auth-Token") String token) {
+        authenticationService.logout(token);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/activate")
@@ -79,7 +94,14 @@ public class ClientController {
     }
 
     @GetMapping("/{nickname}")
-    public ResponseEntity<ClientResponse> getClient(@PathVariable String nickname) {
+    public ResponseEntity<ClientResponse> getClient(
+            @PathVariable String nickname,
+            @RequestHeader(value = "X-Auth-Token", required = false) String token) {
+        // Validate token
+        if (token == null || authenticationService.validateToken(token).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         return clientService.findByNickname(nickname)
                 .map(client -> ResponseEntity.ok(mapToResponse(client)))
                 .orElse(ResponseEntity.notFound().build());

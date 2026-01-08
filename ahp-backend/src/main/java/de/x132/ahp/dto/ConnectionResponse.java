@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthResponse {
-    private String token;
-    private String nickname;
-    private String name;
-    private String surename;
-    private String email;
+public class ConnectionResponse {
+    
+    private Long id;
+    private String sourceNodeName;
+    private String targetNodeName;
+    private Long projectId;
 }
