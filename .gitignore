@@ -9,6 +9,10 @@ node_modules/
 *.iml
 .DS_Store
 
+# H2 Database files
+*.mv.db
+*.trace.db
+
 # Editor and IDE
 .editorconfig
 .vscode/
