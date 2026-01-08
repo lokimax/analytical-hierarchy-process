@@ -64,18 +64,11 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- H2 for testing -->
+        <!-- H2 for development with file persistence -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Embedded PostgreSQL for development/testing -->
-        <dependency>
-            <groupId>io.zonky.test</groupId>
-            <artifactId>embedded-postgres</artifactId>
-            <version>2.0.7</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Development Tools -->

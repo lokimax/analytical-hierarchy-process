@@ -50,7 +50,13 @@ export class AuthService {
   }
 
   getAuthToken(): string | null {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log('✓ Token retrieved from localStorage:', token.substring(0, 10) + '...');
+    } else {
+      console.log('✗ No token found in localStorage');
+    }
+    return token;
   }
 
   isAuthenticated(): boolean {
@@ -74,6 +80,7 @@ export class AuthService {
         localStorage.setItem('currentUser', JSON.stringify(user));
         if (response.token) {
           localStorage.setItem('token', response.token);
+          console.log('✓ Token saved to localStorage:', response.token.substring(0, 10) + '...');
         }
       })
     );

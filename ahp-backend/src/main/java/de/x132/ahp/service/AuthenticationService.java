@@ -5,6 +5,7 @@ import de.x132.ahp.model.Token;
 import de.x132.ahp.repository.ClientRepository;
 import de.x132.ahp.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,9 +84,34 @@ public class AuthenticationService {
      * @param tokenValue the authentication token
      * @return the client associated with the token
      */
+    @Transactional(readOnly = true)
     public Optional<Client> validateToken(String tokenValue) {
         return tokenRepository.findByToken(tokenValue)
-                .map(Token::getClient);
+                .map(token -> {
+                    Client client = token.getClient();
+                    // Force initialization of lazy-loaded fields
+                    client.getNickname();
+                    return client;
+                });
+    }
+
+    /**
+     * Gets the authenticated client from Spring Security Authentication.
+     *
+     * @param authentication the Spring Security Authentication object
+     * @return the authenticated client
+     * @throws RuntimeException if no valid token is found
+     */
+    @Transactional(readOnly = true)
+    public Client getAuthenticatedClient(Authentication authentication) {
+        // Extract token from principal (set by JwtAuthenticationFilter)
+        if (authentication == null || authentication.getCredentials() == null) {
+            throw new RuntimeException("Not authenticated");
+        }
+        
+        String token = authentication.getCredentials().toString();
+        return validateToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
     }
 
     /**

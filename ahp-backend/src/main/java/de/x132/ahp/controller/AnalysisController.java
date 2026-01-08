@@ -3,12 +3,15 @@ package de.x132.ahp.controller;
 import de.x132.ahp.dto.AnalysisRequest;
 import de.x132.ahp.dto.AnalysisResponse;
 import de.x132.ahp.model.Analysis;
+import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
 import de.x132.ahp.service.AnalysisService;
+import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -16,24 +19,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/clients/{nickname}/projects/{projectName}/analyses")
+@RequestMapping("/api/projects/{projectName}/analyses")
 public class AnalysisController {
 
     private final AnalysisService analysisService;
     private final ProjectService projectService;
+    private final AuthenticationService authenticationService;
 
-    public AnalysisController(AnalysisService analysisService, ProjectService projectService) {
+    public AnalysisController(AnalysisService analysisService, ProjectService projectService, AuthenticationService authenticationService) {
         this.analysisService = analysisService;
         this.projectService = projectService;
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping
     public ResponseEntity<AnalysisResponse> createAnalysis(
-            @PathVariable String nickname,
             @PathVariable String projectName,
-            @Valid @RequestBody AnalysisRequest request) {
+            @Valid @RequestBody AnalysisRequest request,
+            Authentication authentication) {
         
-        Project project = projectService.findByClientNicknameAndName(nickname, projectName)
+        Client client = authenticationService.getAuthenticatedClient(authentication);
+        Project project = projectService.findByClientNicknameAndName(client.getNickname(), projectName)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
         if (analysisService.findByProjectAndName(project, request.getName()).isPresent()) {
@@ -57,10 +63,11 @@ public class AnalysisController {
 
     @GetMapping
     public ResponseEntity<List<AnalysisResponse>> getAllAnalyses(
-            @PathVariable String nickname,
-            @PathVariable String projectName) {
+            @PathVariable String projectName,
+            Authentication authentication) {
         
-        Project project = projectService.findByClientNicknameAndName(nickname, projectName)
+        Client client = authenticationService.getAuthenticatedClient(authentication);
+        Project project = projectService.findByClientNicknameAndName(client.getNickname(), projectName)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
         List<AnalysisResponse> analyses = analysisService.findAllByProject(project).stream()
@@ -72,9 +79,13 @@ public class AnalysisController {
 
     @GetMapping("/{analysisId}")
     public ResponseEntity<AnalysisResponse> getAnalysis(
-            @PathVariable String nickname,
             @PathVariable String projectName,
-            @PathVariable Long analysisId) {
+            @PathVariable Long analysisId,
+            Authentication authentication) {
+        
+        Client client = authenticationService.getAuthenticatedClient(authentication);
+        projectService.findByClientNicknameAndName(client.getNickname(), projectName)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
         
         return analysisService.findById(analysisId)
                 .map(analysis -> ResponseEntity.ok(mapToResponse(analysis)))
@@ -83,9 +94,13 @@ public class AnalysisController {
 
     @DeleteMapping("/{analysisId}")
     public ResponseEntity<Void> deleteAnalysis(
-            @PathVariable String nickname,
             @PathVariable String projectName,
-            @PathVariable Long analysisId) {
+            @PathVariable Long analysisId,
+            Authentication authentication) {
+        
+        Client client = authenticationService.getAuthenticatedClient(authentication);
+        projectService.findByClientNicknameAndName(client.getNickname(), projectName)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
         
         analysisService.deleteAnalysis(analysisId);
         return ResponseEntity.noContent().build();

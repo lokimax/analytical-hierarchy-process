@@ -2,8 +2,10 @@ package de.x132.ahp.controller;
 
 import de.x132.ahp.dto.NodeRequest;
 import de.x132.ahp.dto.NodeResponse;
+import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.NodeService;
 import de.x132.ahp.service.ProjectService;
 import jakarta.validation.Valid;
@@ -21,10 +23,12 @@ public class NodeController {
 
     private final NodeService nodeService;
     private final ProjectService projectService;
+    private final AuthenticationService authenticationService;
 
-    public NodeController(NodeService nodeService, ProjectService projectService) {
+    public NodeController(NodeService nodeService, ProjectService projectService, AuthenticationService authenticationService) {
         this.nodeService = nodeService;
         this.projectService = projectService;
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping
@@ -33,7 +37,8 @@ public class NodeController {
             @PathVariable String projectName,
             @Valid @RequestBody NodeRequest request) {
         
-        String nickname = authentication.getName();
+        Client client = authenticationService.getAuthenticatedClient(authentication);
+        String nickname = client.getNickname();
         Project project = projectService.findByClientNicknameAndName(nickname, projectName)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -58,7 +63,8 @@ public class NodeController {
             Authentication authentication,
             @PathVariable String projectName) {
         
-        String nickname = authentication.getName();
+        Client client = authenticationService.getAuthenticatedClient(authentication);
+        String nickname = client.getNickname();
         Project project = projectService.findByClientNicknameAndName(nickname, projectName)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -75,7 +81,8 @@ public class NodeController {
             @PathVariable String projectName,
             @PathVariable String nodeName) {
         
-        String nickname = authentication.getName();
+        Client client = authenticationService.getAuthenticatedClient(authentication);
+        String nickname = client.getNickname();
         return nodeService.findByProjectClientNicknameAndProjectNameAndName(nickname, projectName, nodeName)
                 .map(node -> ResponseEntity.ok(mapToResponse(node)))
                 .orElse(ResponseEntity.notFound().build());
@@ -87,7 +94,8 @@ public class NodeController {
             @PathVariable String projectName,
             @PathVariable String nodeName) {
         
-        String nickname = authentication.getName();
+        Client client = authenticationService.getAuthenticatedClient(authentication);
+        String nickname = client.getNickname();
         Node node = nodeService.findByProjectClientNicknameAndProjectNameAndName(nickname, projectName, nodeName)
                 .orElseThrow(() -> new RuntimeException("Node not found"));
 

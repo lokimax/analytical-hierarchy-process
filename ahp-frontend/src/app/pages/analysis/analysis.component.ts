@@ -416,10 +416,10 @@ export class AnalysisComponent implements OnInit {
   private radarChartInstance: Chart | null = null;
 
   ahpScale = [
-    { value: 1/9, label: '9', description: 'Extreme importance', direction: 'left' },
-    { value: 1/7, label: '7', description: 'Very strong importance', direction: 'left' },
-    { value: 1/5, label: '5', description: 'Strong importance', direction: 'left' },
-    { value: 1/3, label: '3', description: 'Moderate importance', direction: 'left' },
+    { value: 9, label: '9', description: 'Extreme importance', direction: 'left' },
+    { value: 7, label: '7', description: 'Very strong importance', direction: 'left' },
+    { value: 5, label: '5', description: 'Strong importance', direction: 'left' },
+    { value: 3, label: '3', description: 'Moderate importance', direction: 'left' },
     { value: 1, label: '1', description: 'Equal importance', direction: 'equal' },
     { value: 3, label: '3', description: 'Moderate importance', direction: 'right' },
     { value: 5, label: '5', description: 'Strong importance', direction: 'right' },

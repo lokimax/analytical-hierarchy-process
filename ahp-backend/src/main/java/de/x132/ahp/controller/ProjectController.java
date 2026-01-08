@@ -68,7 +68,7 @@ public class ProjectController {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(projects);
+        return projects.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(projects);
     }
 
     @GetMapping("/{projectName}")
