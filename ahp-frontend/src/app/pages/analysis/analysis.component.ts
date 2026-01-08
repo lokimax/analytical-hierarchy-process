@@ -211,7 +211,13 @@ import { Chart, ChartConfiguration, registerables } from 'chart.js';
                 <div class="mb-4">
                   <h5>Alternative Scores per Criterion (Details)</h5>
                   <div *ngFor="let criterion of criteria()" class="mb-3">
-                    <h6 class="text-primary">{{ criterion.name }}</h6>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <h6 class="text-primary mb-0">{{ criterion.name }}</h6>
+                      <span class="badge" [ngClass]="getConsistencyBadgeClass(getCriterionConsistency(criterion)?.cr)">
+                        <i class="bi me-1" [ngClass]="getConsistencyIconClass(getCriterionConsistency(criterion)?.cr)"></i>
+                        CI {{ getCriterionConsistency(criterion)?.ci | number:'1.3-3' }} / CR {{ getCriterionConsistency(criterion)?.cr | number:'1.3-3' }}
+                      </span>
+                    </div>
                     <div class="table-responsive">
                       <table class="table table-sm table-bordered">
                         <thead>
@@ -275,11 +281,17 @@ import { Chart, ChartConfiguration, registerables } from 'chart.js';
             </div>
 
             <!-- Pairwise Comparison -->
-            <div *ngIf="phase() < 3" class="card mb-4">
-              <div class="card-header">
-                <h4 class="mb-0"><i class="bi bi-arrows-angle-contract"></i> {{ getComparisonTitle() }}</h4>
+            <div *ngIf="phase() === 3" class="card mb-4">
+              <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-trophy"></i> AHP Analysis Results</h4>
               </div>
               <div class="card-body">
+                <div class="alert" [ngClass]="getConsistencyAlertClass(criteriaConsistency().cr)">
+                  <i class="bi me-2" [ngClass]="getConsistencyIconClass(criteriaConsistency().cr)"></i>
+                  <strong>Criteria Consistency</strong>
+                  <span class="ms-2">CI: {{ criteriaConsistency().ci | number:'1.3-3' }}, CR: {{ criteriaConsistency().cr | number:'1.3-3' }}</span>
+                  <span class="ms-2 text-muted">(n = {{ criteriaConsistency().n }}, Schwelle 0.10)</span>
+                </div>
                 <p class="text-muted">{{ getComparisonDescription() }}</p>
 
                 <div *ngIf="currentComparison()" class="comparison-section">
@@ -398,11 +410,15 @@ export class AnalysisComponent implements OnInit {
   selectedValue = signal<number | null>(null);
   
   totalComparisons = signal(0);
+
+  private readonly consistencyThreshold = 0.1;
   
   // Results
   criteriaWeights = signal<any[]>([]);
   alternativeScoresPerCriterion = signal<Map<string, any[]>>(new Map());
   finalResults = signal<any[]>([]);
+  criteriaConsistency = signal<{ ci: number; cr: number; n: number }>({ ci: 0, cr: 0, n: 0 });
+  alternativeConsistency = signal<Map<string, { ci: number; cr: number; n: number }>>(new Map());
 
   // Save functionality
   showSaveDialog = false;
@@ -719,13 +735,18 @@ export class AnalysisComponent implements OnInit {
 
   calculateResults(): void {
     // Calculate criteria weights
-    const critWeights = this.calculateWeightsFromComparisons(
+    const criteriaResult = this.calculateWeightsAndConsistency(
       this.criteriaComparisons(),
       this.criteria()
     );
+    this.criteriaConsistency.set({
+      ci: criteriaResult.ci,
+      cr: criteriaResult.cr,
+      n: criteriaResult.n
+    });
     
     // Map to criterion for display
-    const criteriaWeights = critWeights.map(w => ({
+    const criteriaWeights = criteriaResult.weights.map(w => ({
       criterion: w.item,
       weight: w.weight
     }));
@@ -733,9 +754,16 @@ export class AnalysisComponent implements OnInit {
 
     // Calculate alternative weights for each criterion
     const altScoresMap = new Map<string, any[]>();
+    const altConsistencyMap = new Map<string, { ci: number; cr: number; n: number }>();
     this.criteria().forEach(criterion => {
       const comps = this.alternativeComparisons().get(criterion.name) || [];
-      const weights = this.calculateWeightsFromComparisons(comps, this.alternatives());
+      const altResult = this.calculateWeightsAndConsistency(comps, this.alternatives());
+      altConsistencyMap.set(criterion.name, {
+        ci: altResult.ci,
+        cr: altResult.cr,
+        n: altResult.n
+      });
+      const weights = altResult.weights;
       
       const critWeight = criteriaWeights.find(w => w.criterion.id === criterion.id)?.weight || 0;
       const scoresWithWeighted = weights.map(w => ({
@@ -747,6 +775,7 @@ export class AnalysisComponent implements OnInit {
       altScoresMap.set(criterion.name, scoresWithWeighted);
     });
     this.alternativeScoresPerCriterion.set(altScoresMap);
+    this.alternativeConsistency.set(altConsistencyMap);
 
     // Calculate final scores for alternatives
     const finalScores = this.alternatives().map(alternative => {
@@ -901,9 +930,13 @@ export class AnalysisComponent implements OnInit {
     }
   }
 
-  calculateWeightsFromComparisons(comparisons: any[], items: Node[]): any[] {
+  calculateWeightsAndConsistency(comparisons: any[], items: Node[]): { weights: any[]; ci: number; cr: number; n: number } {
     const n = items.length;
-    
+
+    if (n === 0) {
+      return { weights: [], ci: 0, cr: 0, n };
+    }
+
     // Build pairwise comparison matrix
     const matrix: number[][] = Array(n).fill(0).map(() => Array(n).fill(1));
     
@@ -928,18 +961,65 @@ export class AnalysisComponent implements OnInit {
     }
 
     // Normalize weights
-    const sum = weights.reduce((a, b) => a + b, 0);
+    const sum = weights.reduce((a, b) => a + b, 0) || 1;
     const normalizedWeights = weights.map(w => w / sum);
 
-    // Return results with items
-    return items.map((item, i) => ({
+    // Consistency calculation (Saaty CI/CR)
+    let lambdaMax = 0;
+    for (let i = 0; i < n; i++) {
+      let rowSum = 0;
+      for (let j = 0; j < n; j++) {
+        rowSum += matrix[i][j] * normalizedWeights[j];
+      }
+      lambdaMax += rowSum / (normalizedWeights[i] || 1);
+    }
+    lambdaMax = n > 0 ? lambdaMax / n : 0;
+
+    const ci = n > 1 ? (lambdaMax - n) / (n - 1) : 0;
+    const randomIndex: Record<number, number> = {
+      1: 0,
+      2: 0,
+      3: 0.58,
+      4: 0.90,
+      5: 1.12,
+      6: 1.24,
+      7: 1.32,
+      8: 1.41,
+      9: 1.45,
+      10: 1.49
+    };
+    const ri = randomIndex[n] || 0;
+    const cr = ri > 0 ? ci / ri : 0;
+
+    const weightsWithItems = items.map((item, i) => ({
       item: item,
       weight: normalizedWeights[i]
     })).sort((a, b) => b.weight - a.weight);
+
+    return { weights: weightsWithItems, ci, cr, n };
   }
 
   getAlternativeScoresForCriterion(criterion: Node): any[] {
     return this.alternativeScoresPerCriterion().get(criterion.name) || [];
+  }
+
+  getCriterionConsistency(criterion: Node): { ci: number; cr: number; n: number } | undefined {
+    return this.alternativeConsistency().get(criterion.name);
+  }
+
+  getConsistencyIconClass(cr?: number | null): string {
+    if (cr === null || cr === undefined) return 'bi-question-circle text-muted';
+    return cr <= this.consistencyThreshold ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning';
+  }
+
+  getConsistencyAlertClass(cr?: number | null): string {
+    if (cr === null || cr === undefined) return 'alert-secondary';
+    return cr <= this.consistencyThreshold ? 'alert-success' : 'alert-warning';
+  }
+
+  getConsistencyBadgeClass(cr?: number | null): string {
+    if (cr === null || cr === undefined) return 'bg-secondary';
+    return cr <= this.consistencyThreshold ? 'bg-success' : 'bg-warning text-dark';
   }
 
   restartAnalysis(): void {
