@@ -12,3 +12,6 @@ node_modules/
 # Editor and IDE
 .editorconfig
 .vscode/
+
+# Angular build cache
+.angular/
