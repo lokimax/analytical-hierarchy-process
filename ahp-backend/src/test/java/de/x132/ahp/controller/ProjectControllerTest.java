@@ -102,7 +102,7 @@ public class ProjectControllerTest {
                         .header("Authorization", "Bearer " + authToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newProject)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Test Project"))
                 .andExpect(jsonPath("$.beschreibung").value("A test project for AHP"));
     }
@@ -117,7 +117,7 @@ public class ProjectControllerTest {
         mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newProject)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -199,7 +199,7 @@ public class ProjectControllerTest {
 
         mockMvc.perform(delete("/api/projects/" + projectId)
                         .header("Authorization", "Bearer " + authToken))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify project is deleted
         mockMvc.perform(get("/api/projects/ProjectToDelete")
@@ -219,7 +219,7 @@ public class ProjectControllerTest {
                         .header("Authorization", "Bearer " + authToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newProject)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -244,7 +244,7 @@ public class ProjectControllerTest {
         // Delete project
         mockMvc.perform(delete("/api/projects/" + createdProject.getId())
                         .header("Authorization", "Bearer " + authToken))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify deletion
         mockMvc.perform(get("/api/projects/" + createdProject.getName())

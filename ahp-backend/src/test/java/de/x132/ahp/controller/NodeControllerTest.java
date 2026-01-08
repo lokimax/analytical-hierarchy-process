@@ -1,5 +1,6 @@
 package de.x132.ahp.controller;
 
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import de.x132.ahp.dto.NodeRequest;
 import de.x132.ahp.model.Client;
@@ -126,7 +127,7 @@ public class NodeControllerTest {
         mockMvc.perform(post("/api/projects/TestProject/nodes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(nodeRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("TestNode"))
                 .andExpect(jsonPath("$.beschreibung").value("A test node"));
     }
@@ -144,7 +145,7 @@ public class NodeControllerTest {
                             .header("Authorization", "Bearer " + authToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(nodeRequest)))
-                    .andExpect(status().isOk())
+                    .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.name").value(nodeName));
         }
 
@@ -208,7 +209,7 @@ public class NodeControllerTest {
 
         mockMvc.perform(delete("/api/projects/TestProject/nodes/NodeToDelete")
                         .header("Authorization", "Bearer " + authToken))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify node is deleted
         mockMvc.perform(get("/api/projects/TestProject/nodes/NodeToDelete")
@@ -269,7 +270,7 @@ public class NodeControllerTest {
                             .header("Authorization", "Bearer " + authToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(nodeRequest)))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isCreated());
         }
 
         // 2. Create connections: Goal to Criteria
@@ -319,7 +320,7 @@ public class NodeControllerTest {
         mockMvc.perform(post("/api/projects/TestProject/nodes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(nodeRequest)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -337,7 +338,7 @@ public class NodeControllerTest {
                         .header("Authorization", "Bearer " + authToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(duplicateRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -363,18 +364,22 @@ public class NodeControllerTest {
                         .content(connectionJson))
                 .andExpect(status().isOk());
 
-        // Get connection ID
-        String response = mockMvc.perform(get("/api/projects/TestProject/connections")
+        // Get connection ID from response
+        String listResponse = mockMvc.perform(get("/api/projects/TestProject/connections")
                         .header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
+        // Parse the first connection ID
+        JsonNode jsonNode = objectMapper.readTree(listResponse);
+        Long connectionId = jsonNode.get(0).get("id").asLong();
+
         // Delete connection
-        mockMvc.perform(delete("/api/projects/TestProject/connections/1")
+        mockMvc.perform(delete("/api/projects/TestProject/connections/" + connectionId)
                         .header("Authorization", "Bearer " + authToken))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify deletion
         mockMvc.perform(get("/api/projects/TestProject/connections")

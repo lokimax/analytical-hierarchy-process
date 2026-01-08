@@ -95,10 +95,10 @@ public class ClientControllerTest {
         mockMvc.perform(post("/api/clients/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newClient)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nickname").value("newuser"))
                 .andExpect(jsonPath("$.email").value("newuser@example.com"))
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.status").value("PENDING_ACTIVATION"));
     }
 
     @Test
@@ -114,7 +114,7 @@ public class ClientControllerTest {
         mockMvc.perform(post("/api/clients/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(duplicateClient)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -162,7 +162,7 @@ public class ClientControllerTest {
         String token = authenticationService.login("testuser", testPassword);
 
         mockMvc.perform(get("/api/clients/testuser")
-                        .header("Authorization", "Bearer " + token))
+                        .header("X-Auth-Token", token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickname").value("testuser"))
                 .andExpect(jsonPath("$.name").value("Test"))
@@ -173,14 +173,14 @@ public class ClientControllerTest {
     @Test
     public void testGetUserProfileWithoutToken() throws Exception {
         mockMvc.perform(get("/api/clients/testuser"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
     public void testGetUserProfileWithInvalidToken() throws Exception {
         mockMvc.perform(get("/api/clients/testuser")
                         .header("Authorization", "Bearer invalidtoken"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -189,14 +189,14 @@ public class ClientControllerTest {
         String token = authenticationService.login("testuser", testPassword);
 
         // Logout
-        mockMvc.perform(post("/api/clients/logout")
-                        .header("Authorization", "Bearer " + token))
+        mockMvc.perform(delete("/api/clients/logout")
+                        .header("X-Auth-Token", token))
                 .andExpect(status().isOk());
 
         // Try to access profile with the logged out token (should fail)
         mockMvc.perform(get("/api/clients/testuser")
                         .header("Authorization", "Bearer " + token))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -213,9 +213,15 @@ public class ClientControllerTest {
         mockMvc.perform(post("/api/clients/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUser)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
-        // 2. Login
+        // 2. Activate user
+        Client userToActivate = clientRepository.findByNickname("lifecycleuser")
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        userToActivate.setStatus(UserStatus.ACTIVE);
+        clientRepository.save(userToActivate);
+
+        // 3. Login
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setNickname("lifecycleuser");
         loginRequest.setPassword("lifecyclepass");
@@ -230,22 +236,22 @@ public class ClientControllerTest {
 
         String token = objectMapper.readTree(response).get("token").asText();
 
-        // 3. Access profile
+        // 4. Access profile
         mockMvc.perform(get("/api/clients/lifecycleuser")
-                        .header("Authorization", "Bearer " + token))
+                        .header("X-Auth-Token", token))
                 .andExpect(status().isOk());
 
-        // 4. Logout
-        mockMvc.perform(post("/api/clients/logout")
-                        .header("Authorization", "Bearer " + token))
+        // 5. Logout
+        mockMvc.perform(delete("/api/clients/logout")
+                        .header("X-Auth-Token", token))
                 .andExpect(status().isOk());
 
-        // 5. Try to access after logout (should fail)
+        // 6. Try to access after logout (should fail)
         mockMvc.perform(get("/api/clients/lifecycleuser")
                         .header("Authorization", "Bearer " + token))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
 
-        // 6. Login again (should work)
+        // 7. Login again (should work)
         mockMvc.perform(post("/api/clients/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))

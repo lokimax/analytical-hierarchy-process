@@ -12,8 +12,11 @@ export interface User {
 }
 
 export interface AuthResponse {
-  user: User;
   token?: string;
+  nickname: string;
+  name?: string;
+  surename?: string;
+  email: string;
 }
 
 export interface LoginRequest {
@@ -62,10 +65,9 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
       tap(response => {
         const user: User = {
-          id: response.user.id,
-          nickname: response.user.nickname,
-          email: response.user.email,
-          name: response.user.name
+          nickname: response.nickname,
+          email: response.email,
+          name: response.name
         };
         this.currentUser.set(user);
         this.isAuthenticatedSubject.next(true);
@@ -78,6 +80,21 @@ export class AuthService {
   }
 
   logout(): void {
+    const token = this.getAuthToken();
+    if (token) {
+      // Call backend logout endpoint
+      this.http.delete(`${this.apiUrl}/logout`, {
+        headers: { 'X-Auth-Token': token }
+      }).subscribe({
+        next: () => this.clearAuth(),
+        error: () => this.clearAuth() // Clear auth even if logout fails
+      });
+    } else {
+      this.clearAuth();
+    }
+  }
+
+  private clearAuth(): void {
     this.currentUser.set(null);
     this.isAuthenticatedSubject.next(false);
     localStorage.removeItem('currentUser');

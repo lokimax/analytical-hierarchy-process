@@ -75,7 +75,7 @@ public class ConnectionController {
             @PathVariable Long connectionId) {
         
         nodeService.deleteConnection(connectionId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     private ConnectionResponse mapToResponse(Connection connection) {
