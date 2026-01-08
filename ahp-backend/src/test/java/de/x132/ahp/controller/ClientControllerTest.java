@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -59,8 +61,10 @@ public class ClientControllerTest {
 
     @BeforeEach
     public void setup() {
-        // Setup MockMvc
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        // Setup MockMvc with Spring Security
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
         
         // Clean up tokens and clients
         tokenRepository.deleteAll();

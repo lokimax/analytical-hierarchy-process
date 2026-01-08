@@ -18,15 +18,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.ArrayList;
 
 /**
  * Integration tests for NodeController.
@@ -74,8 +80,10 @@ public class NodeControllerTest {
 
     @BeforeEach
     public void setup() {
-        // Setup MockMvc
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        // Setup MockMvc with Spring Security
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
         
         // Clean up
         connectionRepository.deleteAll();
@@ -108,6 +116,7 @@ public class NodeControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser")
     public void testCreateNode() throws Exception {
         NodeRequest nodeRequest = new NodeRequest();
         nodeRequest.setName("TestNode");
@@ -115,7 +124,6 @@ public class NodeControllerTest {
         nodeRequest.setContent("Node content");
 
         mockMvc.perform(post("/api/projects/TestProject/nodes")
-                        .header("Authorization", "Bearer " + authToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(nodeRequest)))
                 .andExpect(status().isOk())

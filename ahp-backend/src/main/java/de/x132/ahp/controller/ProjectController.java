@@ -9,6 +9,7 @@ import de.x132.ahp.service.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/clients/{nickname}/projects")
+@RequestMapping("/api/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -35,9 +36,10 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(
-            @PathVariable String nickname,
+            Authentication authentication,
             @Valid @RequestBody ProjectRequest request) {
         
+        String nickname = authentication.getName();
         Client client = clientService.findByNickname(nickname)
                 .orElseThrow(() -> new RuntimeException("Client not found"));
 
@@ -57,7 +59,8 @@ public class ProjectController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProjectResponse>> getAllProjects(@PathVariable String nickname) {
+    public ResponseEntity<List<ProjectResponse>> getAllProjects(Authentication authentication) {
+        String nickname = authentication.getName();
         Client client = clientService.findByNickname(nickname)
                 .orElseThrow(() -> new RuntimeException("Client not found"));
 
@@ -70,22 +73,28 @@ public class ProjectController {
 
     @GetMapping("/{projectName}")
     public ResponseEntity<ProjectResponse> getProject(
-            @PathVariable String nickname,
+            Authentication authentication,
             @PathVariable String projectName) {
         
+        String nickname = authentication.getName();
         return projectService.findByClientNicknameAndName(nickname, projectName)
                 .map(project -> ResponseEntity.ok(mapToResponse(project)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{projectName}")
+    @PutMapping("/{projectId}")
     public ResponseEntity<ProjectResponse> updateProject(
-            @PathVariable String nickname,
-            @PathVariable String projectName,
+            Authentication authentication,
+            @PathVariable Long projectId,
             @Valid @RequestBody ProjectRequest request) {
         
-        Project project = projectService.findByClientNicknameAndName(nickname, projectName)
+        Project project = projectService.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        // Verify ownership
+        if (!project.getClient().getNickname().equals(authentication.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         project.setBeschreibung(request.getBeschreibung());
 
@@ -93,15 +102,20 @@ public class ProjectController {
         return ResponseEntity.ok(mapToResponse(updatedProject));
     }
 
-    @DeleteMapping("/{projectName}")
+    @DeleteMapping("/{projectId}")
     public ResponseEntity<Void> deleteProject(
-            @PathVariable String nickname,
-            @PathVariable String projectName) {
+            Authentication authentication,
+            @PathVariable Long projectId) {
         
-        Project project = projectService.findByClientNicknameAndName(nickname, projectName)
+        Project project = projectService.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
-        projectService.deleteProject(project.getId());
+        // Verify ownership
+        if (!project.getClient().getNickname().equals(authentication.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        projectService.deleteProject(projectId);
         return ResponseEntity.noContent().build();
     }
 
@@ -116,3 +130,4 @@ public class ProjectController {
                 .build();
     }
 }
+

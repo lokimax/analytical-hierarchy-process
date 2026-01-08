@@ -9,13 +9,14 @@ import de.x132.ahp.service.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/clients/{nickname}/projects/{projectName}/nodes")
+@RequestMapping("/api/projects/{projectName}/nodes")
 public class NodeController {
 
     private final NodeService nodeService;
@@ -28,10 +29,11 @@ public class NodeController {
 
     @PostMapping
     public ResponseEntity<NodeResponse> createNode(
-            @PathVariable String nickname,
+            Authentication authentication,
             @PathVariable String projectName,
             @Valid @RequestBody NodeRequest request) {
         
+        String nickname = authentication.getName();
         Project project = projectService.findByClientNicknameAndName(nickname, projectName)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -53,9 +55,10 @@ public class NodeController {
 
     @GetMapping
     public ResponseEntity<List<NodeResponse>> getAllNodes(
-            @PathVariable String nickname,
+            Authentication authentication,
             @PathVariable String projectName) {
         
+        String nickname = authentication.getName();
         Project project = projectService.findByClientNicknameAndName(nickname, projectName)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -68,10 +71,11 @@ public class NodeController {
 
     @GetMapping("/{nodeName}")
     public ResponseEntity<NodeResponse> getNode(
-            @PathVariable String nickname,
+            Authentication authentication,
             @PathVariable String projectName,
             @PathVariable String nodeName) {
         
+        String nickname = authentication.getName();
         return nodeService.findByProjectClientNicknameAndProjectNameAndName(nickname, projectName, nodeName)
                 .map(node -> ResponseEntity.ok(mapToResponse(node)))
                 .orElse(ResponseEntity.notFound().build());
@@ -79,10 +83,11 @@ public class NodeController {
 
     @DeleteMapping("/{nodeName}")
     public ResponseEntity<Void> deleteNode(
-            @PathVariable String nickname,
+            Authentication authentication,
             @PathVariable String projectName,
             @PathVariable String nodeName) {
         
+        String nickname = authentication.getName();
         Node node = nodeService.findByProjectClientNicknameAndProjectNameAndName(nickname, projectName, nodeName)
                 .orElseThrow(() -> new RuntimeException("Node not found"));
 
@@ -99,3 +104,4 @@ public class NodeController {
                 .build();
     }
 }
+
