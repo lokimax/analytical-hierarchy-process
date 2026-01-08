@@ -210,6 +210,10 @@ import { AnalysisService, Analysis } from '../../services/analysis.service';
                     <div class="d-flex justify-content-between align-items-start">
                       <div class="flex-grow-1">
                         <h5 class="mb-1">{{ analysis.name }}</h5>
+                        <div *ngIf="getCriteriaConsistencySummary(analysis) as cons" class="d-flex align-items-center gap-2 mb-1">
+                          <span class="badge" [ngClass]="getConsistencyBadgeClass(cons.cr)">CR {{ cons.cr | number:'1.3-3' }}</span>
+                          <span class="text-muted small">CI {{ cons.ci | number:'1.3-3' }}</span>
+                        </div>
                         <p class="mb-1 text-muted small" *ngIf="analysis.beschreibung">{{ analysis.beschreibung }}</p>
                         <small class="text-muted">
                           Completed: {{ formatDate(analysis.completedAt) }}
@@ -247,6 +251,7 @@ export class ProjectDetailComponent implements OnInit {
   alternativen = signal<Node[]>([]);
   analyses = signal<Analysis[]>([]);
   isLoadingAnalyses = signal(false);
+  private readonly consistencyThreshold = 0.1;
   
   showZielForm = false;
   showKriteriumForm = false;
@@ -457,6 +462,24 @@ export class ProjectDetailComponent implements OnInit {
         }
       });
     }
+  }
+
+  getCriteriaConsistencySummary(analysis: Analysis): { ci: number; cr: number } | null {
+    if (!analysis.results) return null;
+    try {
+      const parsed = JSON.parse(analysis.results);
+      if (parsed?.criteriaConsistency && typeof parsed.criteriaConsistency.cr === 'number') {
+        return parsed.criteriaConsistency;
+      }
+    } catch (err) {
+      console.warn('Could not parse analysis results for consistency', err);
+    }
+    return null;
+  }
+
+  getConsistencyBadgeClass(cr?: number | null): string {
+    if (cr === null || cr === undefined) return 'bg-secondary';
+    return cr <= this.consistencyThreshold ? 'bg-success' : 'bg-warning text-dark';
   }
 
   formatDate(dateString: string | undefined): string {
