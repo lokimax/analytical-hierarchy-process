@@ -8,3 +8,7 @@ node_modules/
 .idea/
 *.iml
 .DS_Store
+
+# Editor and IDE
+.editorconfig
+.vscode/
