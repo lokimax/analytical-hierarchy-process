@@ -1,7 +1,7 @@
 {
   "name": "analytical-hierarchy-process-frontend",
   "version": "2.0.0",
-  "description": "Angular frontend for Analytical Hierarchy Process",
+  "description": "Modern Angular 18 frontend for multi-criteria decision analysis using the Analytical Hierarchy Process (AHP) method with interactive pairwise comparisons and visual result presentation",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open",

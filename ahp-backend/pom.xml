@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <name>AHP Backend</name>
-    <description>Backend REST API for AHP application using Spring Boot</description>
+    <description>Spring Boot REST API backend for Analytical Hierarchy Process (AHP) decision-making application with JWT authentication, H2 database, and comprehensive algorithm implementation</description>
 
     <dependencies>
         <!-- Internal Core Module -->
