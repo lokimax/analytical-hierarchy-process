@@ -2,6 +2,9 @@ package de.x132.ahp.controller;
 
 import de.x132.ahp.dto.ProjectRequest;
 import de.x132.ahp.dto.ProjectResponse;
+import de.x132.ahp.exception.ResourceNotFoundException;
+import de.x132.ahp.exception.UnauthorizedException;
+import de.x132.ahp.exception.ValidationException;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
 import de.x132.ahp.service.ClientService;
@@ -41,10 +44,10 @@ public class ProjectController {
         
         String nickname = authentication.getName();
         Client client = clientService.findByNickname(nickname)
-                .orElseThrow(() -> new RuntimeException("Client not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client", "nickname", nickname));
 
         if (projectService.existsByClientAndName(client, request.getName())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new ValidationException("Project with name '" + request.getName() + "' already exists");
         }
 
         Project project = Project.builder()
@@ -62,7 +65,7 @@ public class ProjectController {
     public ResponseEntity<List<ProjectResponse>> getAllProjects(Authentication authentication) {
         String nickname = authentication.getName();
         Client client = clientService.findByNickname(nickname)
-                .orElseThrow(() -> new RuntimeException("Client not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client", "nickname", nickname));
 
         List<ProjectResponse> projects = projectService.findAllByClient(client).stream()
                 .map(this::mapToResponse)
@@ -77,9 +80,9 @@ public class ProjectController {
             @PathVariable String projectName) {
         
         String nickname = authentication.getName();
-        return projectService.findByClientNicknameAndName(nickname, projectName)
-                .map(project -> ResponseEntity.ok(mapToResponse(project)))
-                .orElse(ResponseEntity.notFound().build());
+        Project project = projectService.findByClientNicknameAndName(nickname, projectName)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
+        return ResponseEntity.ok(mapToResponse(project));
     }
 
     @PutMapping("/{projectId}")
@@ -89,11 +92,11 @@ public class ProjectController {
             @Valid @RequestBody ProjectRequest request) {
         
         Project project = projectService.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
 
         // Verify ownership
         if (!project.getClient().getNickname().equals(authentication.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new UnauthorizedException("You do not have permission to update this project");
         }
 
         project.setBeschreibung(request.getBeschreibung());
@@ -108,11 +111,11 @@ public class ProjectController {
             @PathVariable Long projectId) {
         
         Project project = projectService.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
 
         // Verify ownership
         if (!project.getClient().getNickname().equals(authentication.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new UnauthorizedException("You do not have permission to delete this project");
         }
 
         projectService.deleteProject(projectId);

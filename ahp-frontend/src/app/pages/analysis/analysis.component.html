@@ -198,12 +198,16 @@
                 <div class="mb-4">
                   <h5>Alternative Scores per Criterion (Details)</h5>
                   <div *ngFor="let criterion of criteria()" class="mb-3">
-                    <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                       <h6 class="text-primary mb-0">{{ criterion.name }}</h6>
-                      <span class="badge" [ngClass]="getConsistencyBadgeClass(getCriterionConsistency(criterion)?.cr)">
+                      <span class="badge" [ngClass]="getConsistencyBadgeClass(getCriterionConsistency(criterion)?.cr)" 
+                            [title]="getConsistencyStatusText(getCriterionConsistency(criterion)?.cr)">
                         <i class="bi me-1" [ngClass]="getConsistencyIconClass(getCriterionConsistency(criterion)?.cr)"></i>
                         CI {{ getCriterionConsistency(criterion)?.ci | number:'1.3-3' }} / CR {{ getCriterionConsistency(criterion)?.cr | number:'1.3-3' }}
                       </span>
+                      <small class="text-muted" *ngIf="getCriterionConsistency(criterion) && getCriterionConsistency(criterion)!.cr >= 0.1">
+                        ({{ getConsistencyStatusText(getCriterionConsistency(criterion)?.cr) }})
+                      </small>
                     </div>
                     <div class="table-responsive">
                       <table class="table table-sm table-bordered">
@@ -273,12 +277,39 @@
                 <h4 class="mb-0"><i class="bi bi-shuffle"></i> Pairwise Comparisons</h4>
               </div>
               <div class="card-body">
-                <div class="alert" [ngClass]="getConsistencyAlertClass(criteriaConsistency().cr)">
-                  <i class="bi me-2" [ngClass]="getConsistencyIconClass(criteriaConsistency().cr)"></i>
-                  <strong>Criteria Consistency</strong>
-                  <span class="ms-2">CI: {{ criteriaConsistency().ci | number:'1.3-3' }}, CR: {{ criteriaConsistency().cr | number:'1.3-3' }}</span>
-                  <span class="ms-2 text-muted">(n = {{ criteriaConsistency().n }}, Schwelle 0.10)</span>
+                <div class="alert mb-3" [ngClass]="getConsistencyAlertClass(criteriaConsistency().cr)">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi me-2" [ngClass]="getConsistencyIconClass(criteriaConsistency().cr)"></i>
+                    <strong>{{ getConsistencyStatusText(criteriaConsistency().cr) }}</strong>
+                    <span class="ms-auto">
+                      <span class="badge bg-dark">CI: {{ criteriaConsistency().ci | number:'1.3-3' }}</span>
+                      <span class="badge bg-dark ms-1">CR: {{ criteriaConsistency().cr | number:'1.3-3' }}</span>
+                    </span>
+                  </div>
+                  <p class="mb-0 small">
+                    {{ getConsistencyExplanation(criteriaConsistency().cr) }}
+                  </p>
+                  <div class="mt-2 small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Matrix-Größe: n = {{ criteriaConsistency().n }} | Empfohlene Schwelle: CR < 0.10
+                  </div>
                 </div>
+
+                <!-- Consistency Improvement Tips -->
+                <div *ngIf="criteriaConsistency().cr >= 0.1" class="alert alert-info mb-3">
+                  <h6 class="alert-heading">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    Tipps zur Verbesserung der Konsistenz
+                  </h6>
+                  <ul class="mb-0 small">
+                    <li><strong>Transitivität prüfen:</strong> Wenn A wichtiger ist als B, und B wichtiger als C, dann sollte A auch wichtiger als C sein.</li>
+                    <li><strong>Vergleiche überdenken:</strong> Gehen Sie Ihre Bewertungen nochmal durch und korrigieren Sie Widersprüche.</li>
+                    <li><strong>Vergleichsskala beachten:</strong> Verwenden Sie die Saaty-Skala angemessen (1 = gleich wichtig, 3 = etwas wichtiger, 5 = deutlich wichtiger, 7 = sehr wichtig, 9 = absolut dominant).</li>
+                    <li *ngIf="criteriaConsistency().cr < 0.2"><strong>Grenzfall:</strong> CR zwischen 0.1 und 0.2 ist noch tolerierbar, aber eine Überarbeitung wird empfohlen.</li>
+                    <li *ngIf="criteriaConsistency().cr >= 0.2"><strong>Kritisch:</strong> Eine Überarbeitung ist dringend empfohlen, um verlässliche Ergebnisse zu erhalten.</li>
+                  </ul>
+                </div>
+
                 <p class="text-muted">{{ getComparisonDescription() }}</p>
 
                 <div *ngIf="currentComparison()" class="comparison-section">

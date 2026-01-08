@@ -2,6 +2,8 @@ package de.x132.ahp.controller;
 
 import de.x132.ahp.dto.AnalysisRequest;
 import de.x132.ahp.dto.AnalysisResponse;
+import de.x132.ahp.exception.ResourceNotFoundException;
+import de.x132.ahp.exception.ValidationException;
 import de.x132.ahp.model.Analysis;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
@@ -40,10 +42,10 @@ public class AnalysisController {
         
         Client client = authenticationService.getAuthenticatedClient(authentication);
         Project project = projectService.findByClientNicknameAndName(client.getNickname(), projectName)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
 
         if (analysisService.findByProjectAndName(project, request.getName()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new ValidationException("Analysis with name '" + request.getName() + "' already exists in this project");
         }
 
         Analysis analysis = Analysis.builder()
@@ -68,7 +70,7 @@ public class AnalysisController {
         
         Client client = authenticationService.getAuthenticatedClient(authentication);
         Project project = projectService.findByClientNicknameAndName(client.getNickname(), projectName)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
 
         List<AnalysisResponse> analyses = analysisService.findAllByProject(project).stream()
                 .map(this::mapToResponse)
@@ -85,11 +87,11 @@ public class AnalysisController {
         
         Client client = authenticationService.getAuthenticatedClient(authentication);
         projectService.findByClientNicknameAndName(client.getNickname(), projectName)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
         
-        return analysisService.findById(analysisId)
-                .map(analysis -> ResponseEntity.ok(mapToResponse(analysis)))
-                .orElse(ResponseEntity.notFound().build());
+        Analysis analysis = analysisService.findById(analysisId)
+                .orElseThrow(() -> new ResourceNotFoundException("Analysis", "id", analysisId));
+        return ResponseEntity.ok(mapToResponse(analysis));
     }
 
     @DeleteMapping("/{analysisId}")
@@ -100,7 +102,11 @@ public class AnalysisController {
         
         Client client = authenticationService.getAuthenticatedClient(authentication);
         projectService.findByClientNicknameAndName(client.getNickname(), projectName)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
+        
+        // Verify analysis exists before deleting
+        analysisService.findById(analysisId)
+                .orElseThrow(() -> new ResourceNotFoundException("Analysis", "id", analysisId));
         
         analysisService.deleteAnalysis(analysisId);
         return ResponseEntity.noContent().build();

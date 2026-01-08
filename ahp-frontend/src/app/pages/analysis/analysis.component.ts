@@ -633,17 +633,41 @@ export class AnalysisComponent implements OnInit {
 
   getConsistencyIconClass(cr?: number | null): string {
     if (cr === null || cr === undefined) return 'bi-question-circle text-muted';
-    return cr <= this.consistencyThreshold ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning';
+    if (cr < 0.1) return 'bi-check-circle-fill text-success';
+    if (cr < 0.2) return 'bi-exclamation-triangle-fill text-warning';
+    return 'bi-x-circle-fill text-danger';
   }
 
   getConsistencyAlertClass(cr?: number | null): string {
     if (cr === null || cr === undefined) return 'alert-secondary';
-    return cr <= this.consistencyThreshold ? 'alert-success' : 'alert-warning';
+    if (cr < 0.1) return 'alert-success';
+    if (cr < 0.2) return 'alert-warning';
+    return 'alert-danger';
   }
 
   getConsistencyBadgeClass(cr?: number | null): string {
     if (cr === null || cr === undefined) return 'bg-secondary';
-    return cr <= this.consistencyThreshold ? 'bg-success' : 'bg-warning text-dark';
+    if (cr < 0.1) return 'bg-success';
+    if (cr < 0.2) return 'bg-warning text-dark';
+    return 'bg-danger';
+  }
+
+  getConsistencyStatusText(cr?: number | null): string {
+    if (cr === null || cr === undefined) return 'Nicht berechnet';
+    if (cr < 0.1) return 'Excellent - Konsistenz akzeptabel';
+    if (cr < 0.2) return 'Vorsicht - Inkonsistenz erkannt';
+    return 'Kritisch - Starke Inkonsistenz';
+  }
+
+  getConsistencyExplanation(cr?: number | null): string {
+    if (cr === null || cr === undefined) return '';
+    if (cr < 0.1) {
+      return 'Die paarweisen Vergleiche sind konsistent. Die Gewichtungen sind zuverlässig.';
+    }
+    if (cr < 0.2) {
+      return 'Die Konsistenz liegt außerhalb des empfohlenen Bereichs (CR > 0.1). Überprüfen Sie Ihre Vergleiche auf Widersprüche. Beispiel: Wenn A > B und B > C, sollte auch A > C gelten.';
+    }
+    return 'Die Inkonsistenz ist sehr hoch (CR ≥ 0.2). Die Ergebnisse könnten unzuverlässig sein. Bitte überarbeiten Sie Ihre paarweisen Vergleiche sorgfältig.';
   }
 
   restartAnalysis(): void {

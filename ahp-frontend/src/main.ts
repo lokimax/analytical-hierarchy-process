@@ -5,12 +5,13 @@ import { routes } from './app/app-routing.module';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { authInterceptor } from './app/services/auth.interceptor';
+import { errorInterceptor } from './app/services/error.interceptor';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authInterceptor])
+      withInterceptors([authInterceptor, errorInterceptor])
     ),
     provideAnimations()
   ]
