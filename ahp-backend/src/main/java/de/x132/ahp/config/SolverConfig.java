@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SolverConfig {
 
-    @Bean
-    public Solver ahpSolver() {
-        return new AHPSolver();
-    }
+  @Bean
+  public Solver ahpSolver() {
+    return new AHPSolver();
+  }
 }

@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NodeRequest {
-    
-    @NotBlank(message = "Name is required")
-    private String name;
-    
-    private String beschreibung;
-    
-    private String content;
+
+  @NotBlank(message = "Name is required")
+  private String name;
+
+  private String beschreibung;
+
+  private String content;
 }

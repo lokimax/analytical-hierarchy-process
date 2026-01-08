@@ -7,148 +7,152 @@ import de.x132.ahp.core.model.Comparison;
 import de.x132.ahp.core.model.Node;
 import de.x132.ahp.core.model.Prioritisation;
 import de.x132.ahp.core.model.Project;
-import lombok.extern.slf4j.Slf4j;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementation of the AHP Solver using the Analytic Hierarchy Process method.
- * This solver creates prioritizations and calculates priorities for hierarchical decision problems.
+ * Implementation of the AHP Solver using the Analytic Hierarchy Process method. This solver creates
+ * prioritizations and calculates priorities for hierarchical decision problems.
  *
  * @author Max Wick
  */
 @Slf4j
 public class AHPSolver implements Solver {
 
-    @Override
-    public Prioritisation generatePrioritisation(Project project) {
-        Prioritisation prioritisation = Prioritisation.builder()
-                .name("Generated Prioritisation for " + project.getName())
-                .project(project)
-                .build();
+  @Override
+  public Prioritisation generatePrioritisation(Project project) {
+    Prioritisation prioritisation =
+        Prioritisation.builder()
+            .name("Generated Prioritisation for " + project.getName())
+            .project(project)
+            .build();
 
-        // Generate all necessary pairwise comparisons
-        for (Node parentNode : project.getNodes()) {
-            List<Node> children = parentNode.getChildren();
+    // Generate all necessary pairwise comparisons
+    for (Node parentNode : project.getNodes()) {
+      List<Node> children = parentNode.getChildren();
 
-            if (children != null && children.size() > 1) {
-                // Create pairwise comparisons for all child combinations
-                for (int i = 0; i < children.size(); i++) {
-                    for (int j = i + 1; j < children.size(); j++) {
-                        Node nodeA = children.get(i);
-                        Node nodeB = children.get(j);
+      if (children != null && children.size() > 1) {
+        // Create pairwise comparisons for all child combinations
+        for (int i = 0; i < children.size(); i++) {
+          for (int j = i + 1; j < children.size(); j++) {
+            Node nodeA = children.get(i);
+            Node nodeB = children.get(j);
 
-                        Comparison comparison = Comparison.builder()
-                                .parent(parentNode)
-                                .nodeA(nodeA)
-                                .nodeB(nodeB)
-                                .value(BigDecimal.ONE) // Default to equal importance
-                                .build();
+            Comparison comparison =
+                Comparison.builder()
+                    .parent(parentNode)
+                    .nodeA(nodeA)
+                    .nodeB(nodeB)
+                    .value(BigDecimal.ONE) // Default to equal importance
+                    .build();
 
-                        prioritisation.addComparison(comparison);
-                    }
-                }
-            }
+            prioritisation.addComparison(comparison);
+          }
         }
-
-        return prioritisation;
+      }
     }
 
-    @Override
-    public SolvingResultDTO getSolvingResultFor(Node node, Prioritisation prioritisation) {
-        AHPNode ahpNode = new AHPNode(node, prioritisation);
+    return prioritisation;
+  }
 
-        SolvingResultDTO result = SolvingResultDTO.builder()
-                .parentNodeName(node.getName())
-                .consistent(ahpNode.isConsistent())
-                .consistencyRatio(ahpNode.getCr())
-                .results(ahpNode.getSingleResults())
-                .build();
+  @Override
+  public SolvingResultDTO getSolvingResultFor(Node node, Prioritisation prioritisation) {
+    AHPNode ahpNode = new AHPNode(node, prioritisation);
 
-        if (!ahpNode.isConsistent()) {
-            log.warn("Node {} is inconsistent with CR={}", node.getName(), ahpNode.getCr());
-        }
+    SolvingResultDTO result =
+        SolvingResultDTO.builder()
+            .parentNodeName(node.getName())
+            .consistent(ahpNode.isConsistent())
+            .consistencyRatio(ahpNode.getCr())
+            .results(ahpNode.getSingleResults())
+            .build();
 
-        return result;
+    if (!ahpNode.isConsistent()) {
+      log.warn("Node {} is inconsistent with CR={}", node.getName(), ahpNode.getCr());
     }
 
-    @Override
-    public FullResultDTO getSolvingResult(List<Node> startNodes, Prioritisation prioritisation) {
-        FullResultDTO fullResult = FullResultDTO.builder().build();
+    return result;
+  }
 
-        // Calculate results for all nodes that have children
-        List<Node> allNodes = collectAllNodes(startNodes);
+  @Override
+  public FullResultDTO getSolvingResult(List<Node> startNodes, Prioritisation prioritisation) {
+    FullResultDTO fullResult = FullResultDTO.builder().build();
 
-        for (Node node : allNodes) {
-            if (node.getChildren() != null && !node.getChildren().isEmpty()) {
-                SolvingResultDTO nodeResult = getSolvingResultFor(node, prioritisation);
-                fullResult.addNodeResult(nodeResult);
-            }
-        }
+    // Calculate results for all nodes that have children
+    List<Node> allNodes = collectAllNodes(startNodes);
 
-        // Determine overall consistency
-        fullResult.setOverallConsistent(fullResult.getInconsistentNodeCount() == 0);
-
-        return fullResult;
+    for (Node node : allNodes) {
+      if (node.getChildren() != null && !node.getChildren().isEmpty()) {
+        SolvingResultDTO nodeResult = getSolvingResultFor(node, prioritisation);
+        fullResult.addNodeResult(nodeResult);
+      }
     }
 
-    @Override
-    public SolvingResultDTO getInfluenceResult(Node node, Prioritisation prioritisation) {
-        // Find all nodes where the given node is a child
-        List<Node> parentNodes = node.getParents();
+    // Determine overall consistency
+    fullResult.setOverallConsistent(fullResult.getInconsistentNodeCount() == 0);
 
-        SolvingResultDTO influenceResult = SolvingResultDTO.builder()
-                .parentNodeName(node.getName())
-                .consistent(true)
-                .build();
+    return fullResult;
+  }
 
-        // Calculate influence from each parent
-        for (Node parent : parentNodes) {
-            AHPNode ahpNode = new AHPNode(parent, prioritisation);
-            SingleResult priority = ahpNode.getPriorityFor(node);
-            influenceResult.addResult(SingleResult.of(parent.getName(), priority.getValue()));
-        }
+  @Override
+  public SolvingResultDTO getInfluenceResult(Node node, Prioritisation prioritisation) {
+    // Find all nodes where the given node is a child
+    List<Node> parentNodes = node.getParents();
 
-        return influenceResult;
+    SolvingResultDTO influenceResult =
+        SolvingResultDTO.builder().parentNodeName(node.getName()).consistent(true).build();
+
+    // Calculate influence from each parent
+    for (Node parent : parentNodes) {
+      AHPNode ahpNode = new AHPNode(parent, prioritisation);
+      SingleResult priority = ahpNode.getPriorityFor(node);
+      influenceResult.addResult(SingleResult.of(parent.getName(), priority.getValue()));
     }
 
-    @Override
-    public FullResultDTO getSolvingResult(List<Node> startNodes, Prioritisation prioritisation, List<Node> showOnlyNodes) {
-        FullResultDTO fullResult = getSolvingResult(startNodes, prioritisation);
+    return influenceResult;
+  }
 
-        // Filter results to show only specified nodes
-        List<SolvingResultDTO> filteredResults = fullResult.getNodeResults().stream()
-                .filter(result -> showOnlyNodes.stream()
+  @Override
+  public FullResultDTO getSolvingResult(
+      List<Node> startNodes, Prioritisation prioritisation, List<Node> showOnlyNodes) {
+    FullResultDTO fullResult = getSolvingResult(startNodes, prioritisation);
+
+    // Filter results to show only specified nodes
+    List<SolvingResultDTO> filteredResults =
+        fullResult.getNodeResults().stream()
+            .filter(
+                result ->
+                    showOnlyNodes.stream()
                         .anyMatch(node -> node.getName().equals(result.getParentNodeName())))
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
 
-        fullResult.setNodeResults(filteredResults);
-        return fullResult;
-    }
+    fullResult.setNodeResults(filteredResults);
+    return fullResult;
+  }
 
-    /**
-     * Recursively collects all nodes in the hierarchy.
-     *
-     * @param nodes the starting nodes
-     * @return list of all nodes including children
-     */
-    private List<Node> collectAllNodes(List<Node> nodes) {
-        List<Node> allNodes = new ArrayList<>(nodes);
+  /**
+   * Recursively collects all nodes in the hierarchy.
+   *
+   * @param nodes the starting nodes
+   * @return list of all nodes including children
+   */
+  private List<Node> collectAllNodes(List<Node> nodes) {
+    List<Node> allNodes = new ArrayList<>(nodes);
 
-        for (Node node : nodes) {
-            if (node.getChildren() != null && !node.getChildren().isEmpty()) {
-                List<Node> childNodes = collectAllNodes(node.getChildren());
-                for (Node child : childNodes) {
-                    if (!allNodes.contains(child)) {
-                        allNodes.add(child);
-                    }
-                }
-            }
+    for (Node node : nodes) {
+      if (node.getChildren() != null && !node.getChildren().isEmpty()) {
+        List<Node> childNodes = collectAllNodes(node.getChildren());
+        for (Node child : childNodes) {
+          if (!allNodes.contains(child)) {
+            allNodes.add(child);
+          }
         }
-
-        return allNodes;
+      }
     }
+
+    return allNodes;
+  }
 }

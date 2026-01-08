@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClientResponse {
 
-    private Long id;
-    private String nickname;
-    private String name;
-    private String surename;
-    private String email;
-    private UserStatus status;
+  private Long id;
+  private String nickname;
+  private String name;
+  private String surename;
+  private String email;
+  private UserStatus status;
 }

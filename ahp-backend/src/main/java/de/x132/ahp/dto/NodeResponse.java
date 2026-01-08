@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NodeResponse {
-    private Long id;
-    private String name;
-    private String beschreibung;
-    private String content;
+  private Long id;
+  private String name;
+  private String beschreibung;
+  private String content;
 }

@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConnectionRequest {
-    
-    @NotBlank(message = "Source node name is required")
-    private String sourceNodeName;
-    
-    @NotBlank(message = "Target node name is required")
-    private String targetNodeName;
+
+  @NotBlank(message = "Source node name is required")
+  private String sourceNodeName;
+
+  @NotBlank(message = "Target node name is required")
+  private String targetNodeName;
 }

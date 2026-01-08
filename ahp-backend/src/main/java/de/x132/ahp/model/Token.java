@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,8 +18,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 /**
  * JPA Entity for authentication tokens.
@@ -35,31 +34,31 @@ import java.time.LocalDateTime;
 @ToString(exclude = "client")
 public class Token {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "token_seq")
-    @SequenceGenerator(name = "token_seq", sequenceName = "token_seq", allocationSize = 1)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "token_seq")
+  @SequenceGenerator(name = "token_seq", sequenceName = "token_seq", allocationSize = 1)
+  private Long id;
 
-    @Column(name = "token", nullable = false, unique = true, length = 255)
-    private String token;
+  @Column(name = "token", nullable = false, unique = true, length = 255)
+  private String token;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_id", nullable = false)
-    private Client client;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "client_id", nullable = false)
+  private Client client;
 
-    @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt;
+  @Column(name = "expires_at", nullable = false)
+  private LocalDateTime expiresAt;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at", updatable = false)
+  private LocalDateTime createdAt;
 
-    /**
-     * Checks if the token is expired.
-     *
-     * @return true if expired, false otherwise
-     */
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiresAt);
-    }
+  /**
+   * Checks if the token is expired.
+   *
+   * @return true if expired, false otherwise
+   */
+  public boolean isExpired() {
+    return LocalDateTime.now().isAfter(expiresAt);
+  }
 }

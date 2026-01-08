@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnalysisRequest {
-    @NotBlank(message = "Name is required")
-    private String name;
-    
-    private String beschreibung;
-    private String criteriaComparisons;
-    private String alternativeComparisons;
-    private String results;
+  @NotBlank(message = "Name is required")
+  private String name;
+
+  private String beschreibung;
+  private String criteriaComparisons;
+  private String alternativeComparisons;
+  private String results;
 }

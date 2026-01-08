@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories
 public class AhpApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(AhpApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(AhpApplication.class, args);
+  }
 }

@@ -6,8 +6,8 @@ package de.x132.ahp.model;
  * @author Max Wick
  */
 public enum UserStatus {
-    ACTIVE,
-    INACTIVE,
-    PENDING_ACTIVATION,
-    LOCKED
+  ACTIVE,
+  INACTIVE,
+  PENDING_ACTIVATION,
+  LOCKED
 }
