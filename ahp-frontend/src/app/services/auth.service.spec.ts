@@ -111,6 +111,36 @@ describe('AuthService', () => {
     });
   });
 
+  describe('Activate', () => {
+    it('should call activation endpoint with token', (done) => {
+      service.activate('abc123').subscribe({
+        next: (response) => {
+          expect(response).toEqual({ message: 'ok' });
+          done();
+        },
+        error: done.fail
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/activate?token=abc123`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({});
+      req.flush({ message: 'ok' });
+    });
+
+    it('should handle activation errors', (done) => {
+      service.activate('bad-token').subscribe({
+        next: () => done.fail('Should have failed'),
+        error: (error) => {
+          expect(error.status).toBe(400);
+          done();
+        }
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/activate?token=bad-token`);
+      req.flush('invalid token', { status: 400, statusText: 'Bad Request' });
+    });
+  });
+
   describe('Login', () => {
     it('should login successfully with token', (done) => {
       const loginRequest: LoginRequest = {

@@ -43,11 +43,11 @@ public class ClientController {
   @PostMapping("/register")
   public ResponseEntity<ClientResponse> register(
       @Valid @RequestBody ClientRegistrationRequest request) {
-    if (clientService.existsByNickname(request.getNickname())) {
-      return ResponseEntity.status(HttpStatus.CONFLICT).build();
-    }
+    // Validate that nickname and email don't already exist
+    boolean nicknameExists = clientService.existsByNickname(request.getNickname());
+    boolean emailExists = clientService.existsByEmail(request.getEmail());
 
-    if (clientService.existsByEmail(request.getEmail())) {
+    if (nicknameExists || emailExists) {
       return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 

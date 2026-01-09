@@ -2,6 +2,7 @@ package de.x132.ahp.service;
 
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Token;
+import de.x132.ahp.model.UserStatus;
 import de.x132.ahp.repository.ClientRepository;
 import de.x132.ahp.repository.TokenRepository;
 import java.security.SecureRandom;
@@ -48,6 +49,11 @@ public class AuthenticationService {
 
     if (!passwordEncoder.matches(password, client.getPassword())) {
       throw new RuntimeException("Invalid credentials");
+    }
+
+    // Check if client is activated
+    if (client.getStatus() != UserStatus.ACTIVE) {
+      throw new RuntimeException("Account not activated");
     }
 
     // Generate token

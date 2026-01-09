@@ -70,7 +70,7 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass123'
+      password: 'pass1234'
     };
     authServiceSpy.register.and.returnValue(
       of({ nickname: 'user', email: 'john@example.com' })
@@ -85,7 +85,7 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass123'
+      password: 'pass1234'
     });
   });
 
@@ -95,7 +95,7 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass123'
+      password: 'pass1234'
     };
     authServiceSpy.register.and.returnValue(
       of({ nickname: 'user', email: 'john@example.com' })
@@ -103,10 +103,10 @@ describe('RegisterComponent', () => {
 
     jasmine.clock().install();
     component.register();
-    expect(component.success()).toBe('Registration successful! Redirecting to login...');
+    expect(component.success()).toBe('Registration successful! Please check your email to activate your account.');
     expect(component.isSubmitting()).toBeFalse();
 
-    jasmine.clock().tick(2000);
+    jasmine.clock().tick(3000);
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
     jasmine.clock().uninstall();
   });
@@ -117,7 +117,7 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass123'
+      password: 'pass1234'
     };
 
     const subject = new Subject<any>();
@@ -137,7 +137,7 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'taken@example.com',
-      password: 'pass123'
+      password: 'pass1234'
     };
 
     const subject = new Subject<any>();
@@ -160,7 +160,7 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass123'
+      password: 'pass1234'
     };
 
     const subject = new Subject<any>();
@@ -184,7 +184,7 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass123'
+      password: 'pass1234'
     };
 
     const subject = new Subject<any>();
@@ -193,5 +193,20 @@ describe('RegisterComponent', () => {
     component.register();
     expect(component.error()).toBe('');
     expect(component.success()).toBe('');
+  });
+
+  it('should show validation error when password is too short', () => {
+    component.form = {
+      nickname: 'user',
+      name: 'John',
+      surename: 'Doe',
+      email: 'john@example.com',
+      password: 'short'
+    };
+
+    component.register();
+
+    expect(component.error()).toBe('Password must be at least 8 characters');
+    expect(authServiceSpy.register).not.toHaveBeenCalled();
   });
 });
