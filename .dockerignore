@@ -1,0 +1,12 @@
+.git/
+.gitignore
+*.md
+!README.md
+.env.*.local
+.vscode/
+.idea/
+*.log
+node_modules/
+target/
+dist/
+.angular/

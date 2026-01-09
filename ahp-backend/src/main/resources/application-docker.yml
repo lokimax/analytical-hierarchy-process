@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: AHP Backend
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${SPRING_DATASOURCE_DATABASE:ahp_db}
+    username: ${SPRING_DATASOURCE_USERNAME:ahp_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:ahp_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  security:
+    cors:
+      allowed-origins: http://localhost:4200,http://localhost,http://ahp-frontend
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: Authorization,Content-Type,Accept
+      allow-credentials: true
+      max-age: 3600
+
+server:
+  port: ${SERVER_PORT:9000}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    min-response-size: 1024
+
+logging:
+  level:
+    root: ${LOGGING_LEVEL_ROOT:INFO}
+    de.x132.ahp: ${LOGGING_LEVEL_DE_X132_AHP:DEBUG}
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

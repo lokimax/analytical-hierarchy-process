@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: ahp-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-ahp_db}
+      POSTGRES_USER: ${DB_USER:-ahp_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ahp_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ahp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ahp_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Spring Boot Backend
+  ahp-backend:
+    build:
+      context: .
+      dockerfile: ahp-backend/Dockerfile
+    container_name: ahp-backend
+    environment:
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-ahp_db}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-ahp_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ahp_password}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${DDL_AUTO:-validate}
+      
+      # Application Configuration
+      SPRING_APPLICATION_NAME: AHP Backend
+      SERVER_PORT: 9000
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-docker}
+      
+      # Security
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRATION: 86400000
+      
+      # Logging
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL:-INFO}
+      LOGGING_LEVEL_DE_X132_AHP: DEBUG
+    ports:
+      - "9000:9000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ahp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/public/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    volumes:
+      - ./ahp-backend/src:/app/src:ro
+
+  # Angular Frontend
+  ahp-frontend:
+    build:
+      context: .
+      dockerfile: ahp-frontend/Dockerfile
+    container_name: ahp-frontend
+    environment:
+      API_URL: ${API_URL:-http://localhost:9000}
+      NODE_ENV: ${NODE_ENV:-production}
+    ports:
+      - "80:80"
+      - "4200:80"
+    depends_on:
+      - ahp-backend
+    networks:
+      - ahp-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+networks:
+  ahp-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
