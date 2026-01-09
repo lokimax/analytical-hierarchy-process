@@ -21,7 +21,7 @@ export interface Connection {
   providedIn: 'root'
 })
 export class NodeService {
-  private apiUrl = 'http://localhost:9000/api/projects';
+  private apiUrl = '/api/projects';
 
   constructor(private http: HttpClient) {}
 

@@ -14,6 +14,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Get the auth token from the service
   const authToken = authService.getAuthToken();
+  const url = req.url || '';
+  const isPublicEndpoint =
+    url.includes('/api/clients/register') ||
+    url.includes('/api/clients/login') ||
+    url.includes('/api/clients/activate');
   
   console.log('Interceptor - URL:', req.url, 'Token:', authToken ? 'YES' : 'NO');
 
@@ -26,7 +31,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
     });
   } else {
-    console.log('✗ No token available for request:', req.url);
+    // Avoid noisy logs for public endpoints (register/login/activate)
+    if (!isPublicEndpoint) {
+      console.log('✗ No token available for request:', req.url);
+    }
   }
 
   return next(req).pipe(

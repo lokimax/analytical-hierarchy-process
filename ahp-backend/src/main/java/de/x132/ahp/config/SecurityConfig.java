@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -54,13 +55,27 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/api/public/**")
+                auth.requestMatchers(
+                        new AntPathRequestMatcher("/"),
+                        new AntPathRequestMatcher("/index.html"),
+                        new AntPathRequestMatcher("/*.js"),
+                        new AntPathRequestMatcher("/*.css"),
+                        new AntPathRequestMatcher("/*.ico"),
+                        new AntPathRequestMatcher("/assets/**"),
+                        // Public API endpoints
+                        new AntPathRequestMatcher("/api/public/**"),
+                        new AntPathRequestMatcher("/api/clients/register"),
+                        new AntPathRequestMatcher("/api/clients/activate"),
+                        new AntPathRequestMatcher("/api/clients/login"),
+                        // H2 console
+                        new AntPathRequestMatcher("/h2-console/**"))
                     .permitAll()
-                    .requestMatchers(
-                        "/api/clients/register", "/api/clients/activate", "/api/clients/login")
-                    .permitAll()
+                    // All other API endpoints require authentication
+                    .requestMatchers(new AntPathRequestMatcher("/api/**"))
+                    .authenticated()
+                    // Non-API routes (Angular SPA deep links) are public
                     .anyRequest()
-                    .authenticated())
+                    .permitAll())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();

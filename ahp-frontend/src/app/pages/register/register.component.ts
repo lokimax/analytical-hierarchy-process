@@ -32,6 +32,11 @@ export class RegisterComponent {
       return;
     }
 
+    if (this.form.password.length < 8) {
+      this.error.set('Password must be at least 8 characters');
+      return;
+    }
+
     this.isSubmitting.set(true);
     this.error.set('');
     this.success.set('');
@@ -39,15 +44,17 @@ export class RegisterComponent {
     this.authService.register(this.form).subscribe({
       next: (response) => {
         this.isSubmitting.set(false);
-        this.success.set('Registration successful! Redirecting to login...');
+        this.success.set('Registration successful! Please check your email to activate your account.');
         setTimeout(() => {
           this.router.navigate(['/login']);
-        }, 2000);
+        }, 3000);
       },
       error: (error) => {
         console.error('Registration error:', error);
         if (error.status === 409) {
           this.error.set('Nickname or email already exists');
+        } else if (error.status === 400) {
+          this.error.set('Validation failed. Ensure all fields are valid and password has at least 8 characters.');
         } else {
           this.error.set('Registration failed. Please try again.');
         }

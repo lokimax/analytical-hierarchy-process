@@ -1,153 +1,117 @@
 #!/bin/bash
+# AHP Docker/Podman management helper
+set -euo pipefail
 
-# Script zum Verwalten der Docker Compose Services
-# Verwendung: ./docker-manage.sh [start|stop|restart|logs|build|clean]
+COMPOSE_FILE="docker-compose.dev.yml"
+COMPOSE_CMD=""
 
-set -e
-
-PROJECT_NAME="ahp"
-COMPOSE_FILE="docker-compose.yml"
-ENV_FILE=".env"
-
-# Farben für Output
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+BLUE='\033[0;34m'
+NC='\033[0m'
 
-# Funktionen
-usage() {
-    echo "Verwendung: $0 [BEFEHL]"
-    echo ""
-    echo "Befehle:"
-    echo "  start          - Services starten (im Hintergrund)"
-    echo "  stop           - Services stoppen"
-    echo "  restart        - Services neustarten"
-    echo "  logs           - Logs aller Services anzeigen"
-    echo "  logs-backend   - Nur Backend-Logs"
-    echo "  logs-frontend  - Nur Frontend-Logs"
-    echo "  logs-db        - Nur Datenbank-Logs"
-    echo "  build          - Services neu bauen"
-    echo "  status         - Status aller Services"
-    echo "  clean          - Services & Volumes löschen"
-    echo "  shell-backend  - In Backend-Container gehen"
-    echo "  shell-db       - In DB-Container gehen"
-    echo ""
-}
+print_success() { echo -e "${GREEN}✓ $1${NC}"; }
+print_error()   { echo -e "${RED}✗ $1${NC}"; }
+print_info()    { echo -e "${BLUE}ℹ $1${NC}"; }
+print_header()  { echo -e "${BLUE}==================== $1 ====================${NC}"; }
 
-start() {
-    echo -e "${YELLOW}Starting AHP Services...${NC}"
-    docker-compose -f $COMPOSE_FILE up -d
-    echo -e "${GREEN}✓ Services gestartet${NC}"
-    echo ""
-    echo "Zugriffe:"
-    echo "  Frontend: http://localhost:4200"
-    echo "  Backend:  http://localhost:9000/api"
-    echo "  Postgres: localhost:5432"
-}
-
-stop() {
-    echo -e "${YELLOW}Stopping AHP Services...${NC}"
-    docker-compose -f $COMPOSE_FILE down
-    echo -e "${GREEN}✓ Services gestoppt${NC}"
-}
-
-restart() {
-    echo -e "${YELLOW}Restarting AHP Services...${NC}"
-    docker-compose -f $COMPOSE_FILE restart
-    echo -e "${GREEN}✓ Services neu gestartet${NC}"
-}
-
-logs() {
-    docker-compose -f $COMPOSE_FILE logs -f --tail=100
-}
-
-logs_service() {
-    docker-compose -f $COMPOSE_FILE logs -f --tail=50 "$1"
-}
-
-build() {
-    echo -e "${YELLOW}Building Services...${NC}"
-    docker-compose -f $COMPOSE_FILE build --no-cache
-    echo -e "${GREEN}✓ Build abgeschlossen${NC}"
-}
-
-status() {
-    echo -e "${YELLOW}Service Status:${NC}"
-    docker-compose -f $COMPOSE_FILE ps
-}
-
-clean() {
-    echo -e "${RED}WARNING: This will delete all containers and volumes!${NC}"
-    read -p "Wirklich löschen? (ja/nein): " -r
-    echo ""
-    if [[ $REPLY =~ ^[Jj][Aa]$ ]]; then
-        docker-compose -f $COMPOSE_FILE down -v
-        echo -e "${GREEN}✓ Cleanup abgeschlossen${NC}"
+check_compose_tool() {
+    if command -v podman-compose >/dev/null 2>&1; then
+        COMPOSE_CMD="podman-compose"
+    elif command -v docker >/dev/null 2>&1; then
+        COMPOSE_CMD="docker compose"
     else
-        echo "Abgebrochen"
+        print_error "No container tool found. Install Podman or Docker."
+        exit 1
     fi
 }
 
-shell_backend() {
-    docker-compose -f $COMPOSE_FILE exec ahp-backend bash
+start() {
+    print_header "Starting AHP"
+    $COMPOSE_CMD -f "$COMPOSE_FILE" up -d
+    print_success "Services started"
+    print_info "Frontend/Backend: http://localhost:8080"
+    print_info "MailHog:          http://localhost:8025"
+    print_info "Postgres:         localhost:5432"
 }
 
-shell_db() {
-    docker-compose -f $COMPOSE_FILE exec postgres psql -U ahp_user -d ahp_db
+stop() {
+    print_header "Stopping AHP"
+    $COMPOSE_CMD -f "$COMPOSE_FILE" down
+    print_success "Services stopped"
 }
 
-# Check if docker-compose is installed
-if ! command -v docker-compose &> /dev/null && ! command -v docker compose &> /dev/null; then
-    echo -e "${RED}Error: docker-compose is not installed${NC}"
-    exit 1
-fi
+build() {
+    print_header "Building Maven & Images"
+    mvn -q -DskipTests clean package
+    $COMPOSE_CMD -f "$COMPOSE_FILE" build
+    print_success "Build complete"
+}
 
-# Check if .env file exists
-if [ ! -f "$ENV_FILE" ]; then
-    echo -e "${RED}Error: $ENV_FILE not found${NC}"
-    exit 1
-fi
-
-# Main command handling
-case "${1:-help}" in
-    start)
-        start
-        ;;
-    stop)
-        stop
-        ;;
-    restart)
-        restart
-        ;;
-    logs)
-        logs
-        ;;
-    logs-backend)
-        logs_service "ahp-backend"
-        ;;
-    logs-frontend)
-        logs_service "ahp-frontend"
-        ;;
-    logs-db)
-        logs_service "postgres"
-        ;;
-    build)
+smooth() {
+    print_header "Smooth Startup"
+    $COMPOSE_CMD -f "$COMPOSE_FILE" down 2>/dev/null || true
+    if [[ "${1:-}" == "--build" ]]; then
         build
-        ;;
-    status)
-        status
-        ;;
-    clean)
-        clean
-        ;;
-    shell-backend)
-        shell_backend
-        ;;
-    shell-db)
-        shell_db
-        ;;
-    *)
-        usage
-        ;;
+    fi
+    start
+    sleep 3
+    $COMPOSE_CMD -f "$COMPOSE_FILE" ps
+    print_success "Ready"
+}
+
+logs() {
+    if [[ -n "${1:-}" ]]; then
+        $COMPOSE_CMD -f "$COMPOSE_FILE" logs -f "$1"
+    else
+        $COMPOSE_CMD -f "$COMPOSE_FILE" logs -f
+    fi
+}
+
+status() {
+    print_header "Status"
+    $COMPOSE_CMD -f "$COMPOSE_FILE" ps
+}
+
+clean() {
+    print_header "Clean"
+    $COMPOSE_CMD -f "$COMPOSE_FILE" down -v
+    print_success "Removed containers and volumes"
+}
+
+shell_backend() { $COMPOSE_CMD -f "$COMPOSE_FILE" exec ahp-backend /bin/sh; }
+shell_db()      { $COMPOSE_CMD -f "$COMPOSE_FILE" exec postgres psql -U ahp_user -d ahp_db; }
+
+usage() {
+    cat <<EOF
+AHP Docker Management
+
+Usage: ./docker-manage.sh [command]
+
+Commands:
+  smooth [--build]  Smooth startup (stop, optional build, start)
+  start             Start services
+  stop              Stop services
+  build             Build Maven and images
+  logs [service]    View logs (all or one service)
+  status            Show container status
+  clean             Remove containers and volumes
+  shell-backend     Shell into backend container
+  shell-db          psql inside postgres container
+EOF
+}
+
+check_compose_tool
+case "${1:-}" in
+  smooth) smooth "${2:-}" ;;
+  start) start ;;
+  stop) stop ;;
+  build) build ;;
+  logs) logs "${2:-}" ;;
+  status) status ;;
+  clean) clean ;;
+  shell-backend) shell_backend ;;
+  shell-db) shell_db ;;
+  *) usage ;;
 esac

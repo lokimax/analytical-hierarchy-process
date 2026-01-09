@@ -14,9 +14,9 @@
     <description>Parent POM for Analytical Hierarchy Process (AHP) application</description>
 
     <modules>
+        <module>ahp-frontend</module>
         <module>ahp-core</module>
         <module>ahp-backend</module>
-        <module>ahp-frontend</module>
     </modules>
 
     <properties>
@@ -24,8 +24,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.1.5</spring-boot.version>
-        <node.version>v18.18.0</node.version>
-        <npm.version>9.6.7</npm.version>
+        <node.version>v18.19.1</node.version>
+        <npm.version>10.2.3</npm.version>
     </properties>
 
     <dependencyManagement>

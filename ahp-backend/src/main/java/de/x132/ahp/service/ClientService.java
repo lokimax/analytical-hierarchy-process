@@ -5,10 +5,12 @@ import de.x132.ahp.model.Token;
 import de.x132.ahp.model.UserStatus;
 import de.x132.ahp.repository.ClientRepository;
 import de.x132.ahp.repository.TokenRepository;
+import de.x132.ahp.util.TokenGenerator;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,14 +22,20 @@ public class ClientService {
   private final ClientRepository clientRepository;
   private final TokenRepository tokenRepository;
   private final PasswordEncoder passwordEncoder;
+  private final TokenGenerator tokenGenerator;
+
+  @Value("${app.activation.token-expiry-hours:24}")
+  private Integer tokenExpiryHours;
 
   public ClientService(
       ClientRepository clientRepository,
       TokenRepository tokenRepository,
-      PasswordEncoder passwordEncoder) {
+      PasswordEncoder passwordEncoder,
+      TokenGenerator tokenGenerator) {
     this.clientRepository = clientRepository;
     this.tokenRepository = tokenRepository;
     this.passwordEncoder = passwordEncoder;
+    this.tokenGenerator = tokenGenerator;
   }
 
   public Client registerClient(Client client) {
@@ -125,5 +133,50 @@ public class ClientService {
 
   public boolean existsByEmail(String email) {
     return clientRepository.findByEmail(email).isPresent();
+  }
+
+  /**
+   * Creates an activation token for a client.
+   *
+   * @param client the client to create the token for
+   * @return the generated token
+   */
+  public Token createActivationToken(Client client) {
+    String tokenValue = tokenGenerator.generateToken();
+    LocalDateTime expiresAt = LocalDateTime.now().plusHours(tokenExpiryHours);
+    Token token = Token.builder().token(tokenValue).client(client).expiresAt(expiresAt).build();
+    return tokenRepository.save(token);
+  }
+
+  /**
+   * Activates a client using an activation token.
+   *
+   * @param tokenValue the activation token
+   * @return "success" if activated, "already_active" if client is already active, null if token is
+   *     invalid or expired
+   */
+  public String activateClientWithToken(String tokenValue) {
+    Optional<Token> tokenOpt = tokenRepository.findByToken(tokenValue);
+    if (tokenOpt.isEmpty()) {
+      return null;
+    }
+
+    Token token = tokenOpt.get();
+    if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+      return null;
+    }
+
+    Client client = token.getClient();
+
+    // Check if already activated
+    if (client.getStatus() == UserStatus.ACTIVE) {
+      return "already_active";
+    }
+
+    client.setStatus(UserStatus.ACTIVE);
+    clientRepository.save(client);
+    tokenRepository.delete(token);
+
+    return "success";
   }
 }

@@ -19,7 +19,7 @@ export interface Analysis {
   providedIn: 'root'
 })
 export class AnalysisService {
-  private apiUrl = 'http://localhost:9000/api/projects';
+  private apiUrl = '/api/projects';
 
   constructor(private http: HttpClient) {}
 

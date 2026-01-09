@@ -25,68 +25,39 @@ Bei paarweisen Vergleichen wird die Saaty-Skala verwendet:
 
 ## Technologie-Stack
 
-- **Backend**: Spring Boot 4.0.1, Java 21, Maven
+- **Backend**: Spring Boot 3.1.5, Java 21, Maven 3.9+
 - **Frontend**: Angular 18 (Standalone Components)
-- **Datenbank**: H2 (In-Memory für Entwicklung)
-- **Sicherheit**: JWT-basierte Authentifizierung mit Spring Security
+- **Datenbank**: PostgreSQL 16
+- **Container**: Jib Maven Plugin (Docker/Podman)
+- **Email**: MailHog (Development)
+- **Sicherheit**: JWT-basierte Authentifizierung, Email-Aktivierung
 
-## Installation
+## Schnellstart
 
 ### Voraussetzungen
 
-- **Java 21** oder höher
 - **Maven 3.9+**
-- **Node.js 18+** und **npm**
+- **Podman** oder **Docker**
 - **Git**
 
-### Repository klonen
+### Build & Start
 
 ```bash
+# 1. Repository klonen
 git clone https://github.com/lokimax/analytical-hierarchy-process.git
 cd analytical-hierarchy-process
+
+# 2. Alles bauen (Frontend + Backend + Container-Image)
+mvn clean package -DskipTests
+
+# 3. Services starten
+podman-compose -f docker-compose.dev.yml up -d
+
+# 4. Browser öffnen
+xdg-open http://localhost:8080
 ```
 
-### Backend-Abhängigkeiten installieren
-
-```bash
-cd ahp-backend
-mvn clean install
-cd ..
-```
-
-### Frontend-Abhängigkeiten installieren
-
-```bash
-cd ahp-frontend
-npm install
-cd ..
-```
-
-## Anwendung starten
-
-### Backend starten
-
-Öffnen Sie ein Terminal und führen Sie aus:
-
-```bash
-cd ahp-backend
-mvn spring-boot:run -DskipTests
-```
-
-Das Backend läuft auf **http://localhost:9000**
-
-### Frontend starten
-
-Öffnen Sie ein zweites Terminal und führen Sie aus:
-
-```bash
-cd ahp-frontend
-ng serve
-```
-
-Das Frontend läuft auf **http://localhost:4200**
-
-Die Anwendung öffnet sich automatisch im Browser.
+Das wars! Die Anwendung läuft auf **http://localhost:8080**
 
 ## Durchführung eines Vergleichs
 

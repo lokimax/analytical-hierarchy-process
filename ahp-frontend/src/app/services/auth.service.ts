@@ -36,7 +36,7 @@ export interface RegisterRequest {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:9000/api/clients';
+  private apiUrl = '/api/clients';
   private currentUser = signal<User | null>(null);
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
@@ -107,6 +107,14 @@ export class AuthService {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
     this.router.navigate(['/login']);
+  }
+
+  activate(token: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/activate?token=${token}`, {}).pipe(
+      tap(response => {
+        console.log('Activation response:', response);
+      })
+    );
   }
 
   private loadUserFromStorage(): void {

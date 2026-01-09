@@ -1,0 +1,23 @@
+<div class="activation-container">
+  @if (isLoading()) {
+    <div class="spinner-wrapper">
+      <app-spinner></app-spinner>
+      <p>Activating your account...</p>
+    </div>
+  }
+
+  @if (isSuccess()) {
+    <div class="success-message">
+      <h2>{{ message() }}</h2>
+      <p>You will be redirected to the login page shortly.</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-message">
+      <h2>Activation Failed</h2>
+      <p>{{ error() }}</p>
+      <a routerLink="/register">Back to Registration</a>
+    </div>
+  }
+</div>

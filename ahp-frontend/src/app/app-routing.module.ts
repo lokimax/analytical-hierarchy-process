@@ -13,6 +13,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'activate',
+    loadComponent: () => import('./pages/activation/activation.component').then(m => m.ActivationComponent)
+  },
+  {
     path: '',
     loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent),
     canActivate: [() => {

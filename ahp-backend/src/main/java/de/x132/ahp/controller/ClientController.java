@@ -5,9 +5,12 @@ import de.x132.ahp.dto.ClientRegistrationRequest;
 import de.x132.ahp.dto.ClientResponse;
 import de.x132.ahp.dto.LoginRequest;
 import de.x132.ahp.model.Client;
+import de.x132.ahp.model.Token;
 import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.ClientService;
+import de.x132.ahp.service.EmailService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,11 +29,15 @@ public class ClientController {
 
   private final ClientService clientService;
   private final AuthenticationService authenticationService;
+  private final EmailService emailService;
 
   public ClientController(
-      ClientService clientService, AuthenticationService authenticationService) {
+      ClientService clientService,
+      AuthenticationService authenticationService,
+      EmailService emailService) {
     this.clientService = clientService;
     this.authenticationService = authenticationService;
+    this.emailService = emailService;
   }
 
   @PostMapping("/register")
@@ -54,6 +61,12 @@ public class ClientController {
             .build();
 
     Client savedClient = clientService.registerClient(client);
+
+    // Generate activation token and send email
+    Token activationToken = clientService.createActivationToken(savedClient);
+    emailService.sendActivationEmail(
+        savedClient.getEmail(), savedClient.getNickname(), activationToken.getToken());
+
     return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(savedClient));
   }
 
@@ -89,12 +102,16 @@ public class ClientController {
   }
 
   @PostMapping("/activate")
-  public ResponseEntity<Void> activate(@RequestParam String code) {
-    boolean activated = clientService.activateClient(code);
-    if (activated) {
-      return ResponseEntity.ok().build();
+  public ResponseEntity<?> activate(@RequestParam String token) {
+    String result = clientService.activateClientWithToken(token);
+    if ("success".equals(result)) {
+      return ResponseEntity.ok().body(Map.of("message", "Account activated successfully"));
+    } else if ("already_active".equals(result)) {
+      return ResponseEntity.ok()
+          .body(Map.of("message", "Account already activated. Please log in."));
     }
-    return ResponseEntity.badRequest().build();
+    return ResponseEntity.badRequest()
+        .body(Map.of("message", "Invalid or expired activation token"));
   }
 
   @GetMapping("/{nickname}")

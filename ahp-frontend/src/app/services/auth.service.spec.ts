@@ -7,7 +7,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
   let router: Router;
-  const apiUrl = 'http://localhost:9000/api/clients';
+  const apiUrl = '/api/clients';
 
   beforeEach(() => {
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);

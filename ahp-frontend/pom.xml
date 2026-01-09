@@ -59,7 +59,7 @@
                         </goals>
                         <phase>compile</phase>
                         <configuration>
-                            <arguments>run build</arguments>
+                            <arguments>run build -- --configuration production</arguments>
                         </configuration>
                     </execution>
 
@@ -78,7 +78,7 @@
                 </executions>
             </plugin>
 
-            <!-- Copy built Angular app to target directory -->
+            <!-- Copy built Angular app to backend static resources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -91,10 +91,10 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/classes/static</outputDirectory>
+                            <outputDirectory>${project.parent.basedir}/ahp-backend/src/main/resources/static</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.basedir}/dist/analytical-hierarchy-process-frontend</directory>
+                                    <directory>${project.basedir}/dist/ahp-frontend</directory>
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>
