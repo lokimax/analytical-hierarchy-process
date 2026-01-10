@@ -19,8 +19,13 @@ export class LoginComponent {
 
   isSubmitting = signal(false);
   error = signal('');
+  showPassword = signal(false);
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
+  }
 
   login(): void {
     if (!this.form.nickname || !this.form.password) {

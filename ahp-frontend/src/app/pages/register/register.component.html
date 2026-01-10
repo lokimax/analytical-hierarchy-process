@@ -56,15 +56,26 @@
 
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
-              <input 
-                type="password" 
-                class="form-control" 
-                id="password"
-                [(ngModel)]="form.password"
-                name="password"
-                required
-                minlength="8"
-              >
+              <div class="input-group">
+                <input 
+                  [type]="showPassword() ? 'text' : 'password'"
+                  class="form-control" 
+                  id="password"
+                  [(ngModel)]="form.password"
+                  name="password"
+                  autocomplete="new-password"
+                  required
+                  minlength="8"
+                >
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary" 
+                  (click)="togglePasswordVisibility()"
+                  tabindex="-1"
+                >
+                  <i [ngClass]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                </button>
+              </div>
             </div>
 
             <div *ngIf="error()" class="alert alert-danger" role="alert">

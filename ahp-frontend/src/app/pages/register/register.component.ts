@@ -23,8 +23,13 @@ export class RegisterComponent {
   isSubmitting = signal(false);
   error = signal('');
   success = signal('');
+  showPassword = signal(false);
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
+  }
 
   register(): void {
     if (!this.form.nickname || !this.form.name || !this.form.surename || !this.form.email || !this.form.password) {
