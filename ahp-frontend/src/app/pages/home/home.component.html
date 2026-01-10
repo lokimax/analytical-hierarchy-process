@@ -25,22 +25,56 @@
       </div>
 
       <div *ngIf="!isLoadingProjects() && projects().length > 0" class="list-group mb-4">
-        <button 
+        <div 
           *ngFor="let project of projects()" 
-          class="list-group-item list-group-item-action"
-          (click)="openProject(project)"
+          class="list-group-item"
           style="cursor: pointer;">
           <div class="d-flex w-100 justify-content-between align-items-center">
-            <div class="flex-grow-1">
+            <div class="flex-grow-1" (click)="openProject(project)">
               <h5 class="mb-1">{{ project.name }}</h5>
               <p class="mb-1 text-muted" *ngIf="project.beschreibung">{{ project.beschreibung }}</p>
             </div>
-            <div class="d-flex align-items-center">
-              <small class="text-muted me-3">ID: {{ project.id }}</small>
+            <div class="d-flex align-items-center gap-2">
+              <button 
+                class="btn btn-sm btn-outline-primary" 
+                title="Edit project"
+                (click)="editProject(project)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button 
+                class="btn btn-sm btn-outline-danger" 
+                title="Delete project"
+                (click)="confirmDelete(project.id!)">
+                <i class="bi bi-trash"></i>
+              </button>
               <i class="bi bi-chevron-right"></i>
             </div>
           </div>
-        </button>
+
+          <!-- Delete Confirmation Modal -->
+          <div *ngIf="deleteConfirmProjectId() === project.id" class="alert alert-danger mt-3" role="alert">
+            <h6>Delete Project?</h6>
+            <p class="mb-3">Are you sure you want to delete "{{ project.name }}"? This action cannot be undone.</p>
+            <div class="btn-group" role="group">
+              <button 
+                class="btn btn-sm btn-danger" 
+                (click)="deleteProject(project.id!)"
+                [disabled]="isSubmitting()">
+                <span *ngIf="!isSubmitting()">Delete</span>
+                <span *ngIf="isSubmitting()">
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Deleting...
+                </span>
+              </button>
+              <button 
+                class="btn btn-sm btn-secondary" 
+                (click)="cancelDelete()"
+                [disabled]="isSubmitting()">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -50,7 +84,7 @@
 
     <div *ngIf="showForm()" class="card">
       <div class="card-body">
-        <h5 class="card-title mb-4">Create New Project</h5>
+        <h5 class="card-title mb-4">{{ editingProjectId() ? 'Edit Project' : 'Create New Project' }}</h5>
         
         <div class="mb-3">
           <label for="projectName" class="form-label">Project Name</label>
@@ -60,6 +94,7 @@
             id="projectName"
             [(ngModel)]="projectForm.name"
             placeholder="Enter project name"
+            [disabled]="editingProjectId() !== null"
           >
         </div>
 
@@ -77,10 +112,10 @@
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
           <button class="btn btn-secondary" (click)="toggleForm()">Cancel</button>
           <button class="btn btn-primary" (click)="createProject()" [disabled]="isSubmitting()">
-            <span *ngIf="!isSubmitting()">Create Project</span>
+            <span *ngIf="!isSubmitting()">{{ editingProjectId() ? 'Update Project' : 'Create Project' }}</span>
             <span *ngIf="isSubmitting()">
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Creating...
+              {{ editingProjectId() ? 'Updating...' : 'Creating...' }}
             </span>
           </button>
         </div>

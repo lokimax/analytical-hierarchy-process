@@ -148,6 +148,7 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
 
     component.projectForm = {
+      id: null,
       name: 'New Project',
       beschreibung: 'Test Description',
       clientId: 1
@@ -182,6 +183,7 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
 
     component.projectForm = {
+      id: null,
       name: 'New Project',
       beschreibung: 'Test',
       clientId: 1
@@ -203,6 +205,7 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
 
     component.projectForm = {
+      id: null,
       name: 'New Project',
       beschreibung: 'Test',
       clientId: 1
