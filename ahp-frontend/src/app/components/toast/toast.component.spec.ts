@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ComponentFixture } from '@angular/core/testing';
-import { of, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { ToastComponent } from './toast.component';
 import { ToastService } from '../../services/toast.service';
 
@@ -8,12 +8,15 @@ describe('ToastComponent', () => {
   let fixture: ComponentFixture<ToastComponent>;
   let component: ToastComponent;
   let toastServiceSpy: jasmine.SpyObj<ToastService>;
+  let toastSubject: Subject<any>;
 
   beforeEach(async () => {
-    const subject = new Subject<any>();
+    toastSubject = new Subject<any>();
     toastServiceSpy = jasmine.createSpyObj<ToastService>('ToastService', ['show'], {
-      toasts$: subject.asObservable()
+      toasts$: toastSubject.asObservable()
     });
+
+    jasmine.clock().install();
 
     await TestBed.configureTestingModule({
       imports: [ToastComponent],
@@ -25,34 +28,22 @@ describe('ToastComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => {
+    jasmine.clock().uninstall();
+  });
+
   it('should create the component', () => {
-    toastServiceSpy.toasts$ = of();
-    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should display toasts from the service', (done) => {
-    const mockToasts = [
-      { id: '1', message: 'Success', type: 'success', duration: 3000 },
-      { id: '2', message: 'Error', type: 'error', duration: 3000 }
-    ];
-
-    const subject = new Subject<any>();
-    toastServiceSpy.toasts$ = subject.asObservable();
-
-    // Reinitialize component to subscribe to new observable
-    fixture = TestBed.createComponent(ToastComponent);
-    component = fixture.componentInstance;
+  it('should display toasts from the service', () => {
+    toastSubject.next({ id: '1', message: 'Success', type: 'success', duration: 3000 });
+    toastSubject.next({ id: '2', message: 'Error', type: 'error', duration: 3000 });
     fixture.detectChanges();
 
-    mockToasts.forEach(toast => subject.next(toast));
-    fixture.detectChanges();
-    
-    setTimeout(() => {
-      expect(component.toasts.length).toBe(2);
-      expect(component.toasts[0].message).toBe('Success');
-      done();
-    }, 50);
+    expect(component.toasts.length).toBe(2);
+    expect(component.toasts[0].message).toBe('Success');
+    expect(component.toasts[1].message).toBe('Error');
   });
 
   it('should remove toast by id', () => {
@@ -67,40 +58,22 @@ describe('ToastComponent', () => {
     expect(component.toasts[0].id).toBe('2');
   });
 
-  it('should auto-remove toast after duration', (done) => {
-    const subject = new Subject<any>();
-    toastServiceSpy.toasts$ = subject.asObservable();
-
-    fixture = TestBed.createComponent(ToastComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-
-    subject.next({ id: '1', message: 'Auto-remove', type: 'info', duration: 100 });
+  it('should auto-remove toast after duration', () => {
+    toastSubject.next({ id: '1', message: 'Auto-remove', type: 'info', duration: 100 });
     fixture.detectChanges();
     expect(component.toasts.length).toBe(1);
 
-    setTimeout(() => {
-      expect(component.toasts.length).toBe(0);
-      done();
-    }, 150);
+    jasmine.clock().tick(150);
+    expect(component.toasts.length).toBe(0);
   });
 
-  it('should not auto-remove toast with zero duration', (done) => {
-    const subject = new Subject<any>();
-    toastServiceSpy.toasts$ = subject.asObservable();
-
-    fixture = TestBed.createComponent(ToastComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-
-    subject.next({ id: '1', message: 'Persistent', type: 'warning', duration: 0 });
+  it('should not auto-remove toast with zero duration', () => {
+    toastSubject.next({ id: '1', message: 'Persistent', type: 'warning', duration: 0 });
     fixture.detectChanges();
     expect(component.toasts.length).toBe(1);
 
-    setTimeout(() => {
-      expect(component.toasts.length).toBe(1);
-      done();
-    }, 150);
+    jasmine.clock().tick(150);
+    expect(component.toasts.length).toBe(1);
   });
 
   it('should return correct titles for toast types', () => {

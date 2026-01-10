@@ -5,7 +5,7 @@ import { AnalysisService, Analysis } from './analysis.service';
 describe('AnalysisService', () => {
   let service: AnalysisService;
   let httpMock: HttpTestingController;
-  const baseUrl = 'http://localhost:9000/api/projects';
+    const baseUrl = '/api/projects';
 
   beforeEach(() => {
     TestBed.configureTestingModule({

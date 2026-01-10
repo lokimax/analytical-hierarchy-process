@@ -18,6 +18,7 @@ describe('HomeComponent', () => {
       'updateProject',
       'deleteProject'
     ]);
+  jasmine.clock().install();
 
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
@@ -153,7 +154,6 @@ describe('HomeComponent', () => {
     projectServiceSpy.createProject.and.returnValue(of(createdProject));
     projectServiceSpy.getProjects.and.returnValue(of([createdProject]));
 
-    jasmine.clock().install();
     component.createProject();
 
     expect(component.success()).toContain('created successfully');
@@ -168,7 +168,6 @@ describe('HomeComponent', () => {
     jasmine.clock().tick(2000);
     expect(component.showForm()).toBeFalse();
     expect(component.success()).toBe('');
-    jasmine.clock().uninstall();
   });
 
   it('should reset form after successful creation', () => {
@@ -223,3 +222,7 @@ describe('HomeComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/project', 'Test Project']);
   });
 });
+
+  afterEach(() => {
+    jasmine.clock().uninstall();
+  });

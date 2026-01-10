@@ -5,6 +5,7 @@ import de.x132.ahp.dto.ProjectResponse;
 import de.x132.ahp.exception.ResourceNotFoundException;
 import de.x132.ahp.exception.UnauthorizedException;
 import de.x132.ahp.exception.ValidationException;
+import de.x132.ahp.mapper.ProjectMapper;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
 import de.x132.ahp.service.ClientService;
@@ -30,10 +31,13 @@ public class ProjectController {
 
   private final ProjectService projectService;
   private final ClientService clientService;
+  private final ProjectMapper projectMapper;
 
-  public ProjectController(ProjectService projectService, ClientService clientService) {
+  public ProjectController(
+      ProjectService projectService, ClientService clientService, ProjectMapper projectMapper) {
     this.projectService = projectService;
     this.clientService = clientService;
+    this.projectMapper = projectMapper;
   }
 
   @PostMapping
@@ -50,15 +54,11 @@ public class ProjectController {
       throw new ValidationException("Project with name '" + request.getName() + "' already exists");
     }
 
-    Project project =
-        Project.builder()
-            .name(request.getName())
-            .beschreibung(request.getBeschreibung())
-            .client(client)
-            .build();
+    Project project = projectMapper.toEntity(request);
+    project.setClient(client);
 
     Project savedProject = projectService.createProject(project);
-    return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(savedProject));
+    return ResponseEntity.status(HttpStatus.CREATED).body(projectMapper.toResponse(savedProject));
   }
 
   @GetMapping
@@ -71,10 +71,10 @@ public class ProjectController {
 
     List<ProjectResponse> projects =
         projectService.findAllByClient(client).stream()
-            .map(this::mapToResponse)
+            .map(projectMapper::toResponse)
             .collect(Collectors.toList());
 
-    return projects.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(projects);
+    return ResponseEntity.ok(projects);
   }
 
   @GetMapping("/{projectName}")
@@ -86,7 +86,7 @@ public class ProjectController {
         projectService
             .findByClientNicknameAndName(nickname, projectName)
             .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
-    return ResponseEntity.ok(mapToResponse(project));
+    return ResponseEntity.ok(projectMapper.toResponse(project));
   }
 
   @PutMapping("/{projectId}")
@@ -108,7 +108,7 @@ public class ProjectController {
     project.setBeschreibung(request.getBeschreibung());
 
     Project updatedProject = projectService.updateProject(project);
-    return ResponseEntity.ok(mapToResponse(updatedProject));
+    return ResponseEntity.ok(projectMapper.toResponse(updatedProject));
   }
 
   @DeleteMapping("/{projectId}")
@@ -127,16 +127,5 @@ public class ProjectController {
 
     projectService.deleteProject(projectId);
     return ResponseEntity.noContent().build();
-  }
-
-  private ProjectResponse mapToResponse(Project project) {
-    return ProjectResponse.builder()
-        .id(project.getId())
-        .name(project.getName())
-        .beschreibung(project.getBeschreibung())
-        .clientNickname(project.getClient().getNickname())
-        .createdAt(project.getCreatedAt())
-        .updatedAt(project.getUpdatedAt())
-        .build();
   }
 }
