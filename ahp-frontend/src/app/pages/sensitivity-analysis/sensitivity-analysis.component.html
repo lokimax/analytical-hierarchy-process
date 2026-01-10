@@ -1,0 +1,148 @@
+<div class="container mt-4">
+  <div class="row mb-3">
+    <div class="col">
+      <button class="btn btn-secondary" (click)="goBack()">
+        ← Back to Analysis
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading sensitivity analysis...</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-danger" role="alert">
+      <strong>Error:</strong> {{ error() }}
+    </div>
+  }
+
+  @if (result() && !loading()) {
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Sensitivity Analysis: {{ result()!.criterionName }}</h4>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <strong>Current Weight:</strong> {{ (result()!.currentWeight * 100).toFixed(1) }}%
+          </div>
+          <div class="col-md-4">
+            <strong>Stability Score:</strong> {{ result()!.stability.stabilityScore.toFixed(3) }}
+          </div>
+          <div class="col-md-4">
+            <strong>Risk Level:</strong> 
+            <span [class]="'badge bg-' + getRiskLevelClass(result()!.stability.riskLevel)">
+              {{ getRiskIcon(result()!.stability.riskLevel) }} {{ result()!.stability.riskLevel }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-container mb-4" style="position: relative; height: 400px;">
+          <canvas id="sensitivityChart"></canvas>
+        </div>
+
+        <!-- Stability Metrics -->
+        <div class="card mb-3">
+          <div class="card-header">
+            <h5 class="mb-0">Stability Metrics</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <p>
+                  <strong>Tolerance Range:</strong> ±{{ (result()!.stability.toleranceRange * 100).toFixed(1) }}%
+                  <br>
+                  <small class="text-muted">
+                    How much the criterion weight can change before ranking changes.
+                  </small>
+                </p>
+              </div>
+              <div class="col-md-6">
+                <p>
+                  <strong>Ranking Changes:</strong> {{ result()!.stability.rankingChangeCount }}
+                  <br>
+                  <small class="text-muted">
+                    Number of times the top-ranked alternative changes across weight range.
+                  </small>
+                </p>
+              </div>
+            </div>
+
+            @if (result()!.stability.riskLevel === 'HIGH') {
+              <div class="alert alert-danger mt-3" role="alert">
+                <strong>⚠️ High Risk Decision!</strong> 
+                The ranking is very sensitive to this criterion's weight. 
+                Small changes can significantly impact the final decision.
+                Consider reviewing your pairwise comparisons carefully.
+              </div>
+            }
+
+            @if (result()!.stability.riskLevel === 'MEDIUM') {
+              <div class="alert alert-warning mt-3" role="alert">
+                <strong>⚠️ Moderate Sensitivity</strong> 
+                The decision is moderately sensitive to this criterion. 
+                Be aware that changes in weight can affect the ranking.
+              </div>
+            }
+
+            @if (result()!.stability.riskLevel === 'LOW') {
+              <div class="alert alert-success mt-3" role="alert">
+                <strong>✅ Stable Decision</strong> 
+                The ranking is robust and not very sensitive to this criterion's weight.
+                The decision is reliable across a wide range of weights.
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Critical Points -->
+        @if (result()!.criticalPoints.length > 0) {
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Critical Points</h5>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">
+                Critical points are weights where the top-ranked alternative changes.
+              </p>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Weight Threshold</th>
+                      <th>Before</th>
+                      <th>After</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (cp of result()!.criticalPoints; track cp.weightThreshold) {
+                      <tr>
+                        <td><strong>{{ (cp.weightThreshold * 100).toFixed(1) }}%</strong></td>
+                        <td>{{ cp.beforeWinnerName }}</td>
+                        <td>{{ cp.afterWinnerName }}</td>
+                        <td>{{ cp.description }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="alert alert-info">
+            <strong>No Critical Points Found</strong>
+            The ranking remains stable across all weight variations for this criterion.
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

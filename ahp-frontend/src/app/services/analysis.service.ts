@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { SensitivityResult } from '../models/sensitivity.model';
 
 export interface Analysis {
   id?: number;
@@ -37,5 +38,11 @@ export class AnalysisService {
 
   deleteAnalysis(projectName: string, analysisId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${projectName}/analyses/${analysisId}`);
+  }
+
+  getSensitivityAnalysis(projectName: string, analysisId: number, criterionId: number): Observable<SensitivityResult> {
+    return this.http.get<SensitivityResult>(
+      `${this.apiUrl}/${projectName}/analyses/${analysisId}/sensitivity/${criterionId}`
+    );
   }
 }

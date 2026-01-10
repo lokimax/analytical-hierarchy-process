@@ -92,6 +92,21 @@ export const routes: Routes = [
     }]
   },
   {
+    path: 'projects/:projectName/analyses/:analysisId/sensitivity/:criterionId',
+    loadComponent: () => import('./pages/sensitivity-analysis/sensitivity-analysis.component').then(m => m.SensitivityAnalysisComponent),
+    canActivate: [() => {
+      const authService = inject(AuthService);
+      const router = inject(Router);
+      
+      if (authService.isAuthenticated()) {
+        return true;
+      }
+      
+      router.navigate(['/login']);
+      return false;
+    }]
+  },
+  {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent)
   }
