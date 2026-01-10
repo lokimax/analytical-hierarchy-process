@@ -18,7 +18,6 @@ describe('HomeComponent', () => {
       'updateProject',
       'deleteProject'
     ]);
-  jasmine.clock().install();
 
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
@@ -28,6 +27,7 @@ describe('HomeComponent', () => {
       ],
     }).compileComponents();
 
+    jasmine.clock().install();
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
@@ -107,8 +107,15 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
 
     component.error.set('Some error');
+    fixture.detectChanges();
+    expect(component.error()).toBe('Some error');
+
     component.success.set('Some success');
+    fixture.detectChanges();
+    expect(component.success()).toBe('Some success');
+
     component.toggleForm();
+    fixture.detectChanges();
 
     expect(component.error()).toBe('');
     expect(component.success()).toBe('');
@@ -221,8 +228,9 @@ describe('HomeComponent', () => {
 
     expect(router.navigate).toHaveBeenCalledWith(['/project', 'Test Project']);
   });
-});
 
   afterEach(() => {
     jasmine.clock().uninstall();
+    fixture.destroy();
   });
+});
