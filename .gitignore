@@ -25,5 +25,3 @@ node_modules/
 .env
 .env.local
 .env.*.local
-# Feature roadmap and local notes (not for commit)
-FEATURES.md
