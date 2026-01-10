@@ -8,5 +8,6 @@ package de.x132.ahp.model;
 public enum SolvingMethod {
   AHP,
   WEIGHTED_SUM,
-  FUZZY_AHP
+  FUZZY_AHP,
+  ANP
 }
