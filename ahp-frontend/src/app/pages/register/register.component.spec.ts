@@ -14,6 +14,8 @@ describe('RegisterComponent', () => {
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['register']);
 
+  jasmine.clock().install();
+
     await TestBed.configureTestingModule({
       imports: [RegisterComponent],
       providers: [
@@ -75,10 +77,7 @@ describe('RegisterComponent', () => {
     authServiceSpy.register.and.returnValue(
       of({ nickname: 'user', email: 'john@example.com' })
     );
-
-    jasmine.clock().install();
     component.register();
-    jasmine.clock().uninstall();
 
     expect(authServiceSpy.register).toHaveBeenCalledWith({
       nickname: 'user',
@@ -100,15 +99,12 @@ describe('RegisterComponent', () => {
     authServiceSpy.register.and.returnValue(
       of({ nickname: 'user', email: 'john@example.com' })
     );
-
-    jasmine.clock().install();
     component.register();
     expect(component.success()).toBe('Registration successful! Please check your email to activate your account.');
     expect(component.isSubmitting()).toBeFalse();
 
     jasmine.clock().tick(3000);
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
-    jasmine.clock().uninstall();
   });
 
   it('should set isSubmitting true while request is in-flight', () => {
@@ -210,3 +206,7 @@ describe('RegisterComponent', () => {
     expect(authServiceSpy.register).not.toHaveBeenCalled();
   });
 });
+
+  afterEach(() => {
+    jasmine.clock().uninstall();
+  });

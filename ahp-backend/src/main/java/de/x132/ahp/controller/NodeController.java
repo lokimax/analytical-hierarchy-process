@@ -2,7 +2,7 @@ package de.x132.ahp.controller;
 
 import de.x132.ahp.dto.NodeRequest;
 import de.x132.ahp.dto.NodeResponse;
-import de.x132.ahp.model.Client;
+import de.x132.ahp.mapper.NodeMapper;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
 import de.x132.ahp.service.AuthenticationService;
@@ -23,14 +23,17 @@ public class NodeController {
   private final NodeService nodeService;
   private final ProjectService projectService;
   private final AuthenticationService authenticationService;
+  private final NodeMapper nodeMapper;
 
   public NodeController(
       NodeService nodeService,
       ProjectService projectService,
-      AuthenticationService authenticationService) {
+      AuthenticationService authenticationService,
+      NodeMapper nodeMapper) {
     this.nodeService = nodeService;
     this.projectService = projectService;
     this.authenticationService = authenticationService;
+    this.nodeMapper = nodeMapper;
   }
 
   @PostMapping
@@ -38,9 +41,7 @@ public class NodeController {
       Authentication authentication,
       @PathVariable String projectName,
       @Valid @RequestBody NodeRequest request) {
-
-    Client client = authenticationService.getAuthenticatedClient(authentication);
-    String nickname = client.getNickname();
+    String nickname = authentication.getName();
     Project project =
         projectService
             .findByClientNicknameAndName(nickname, projectName)
@@ -50,24 +51,17 @@ public class NodeController {
       return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
-    Node node =
-        Node.builder()
-            .name(request.getName())
-            .beschreibung(request.getBeschreibung())
-            .content(request.getContent())
-            .project(project)
-            .build();
+    Node node = nodeMapper.toEntity(request);
+    node.setProject(project);
 
     Node savedNode = nodeService.createNode(node);
-    return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(savedNode));
+    return ResponseEntity.status(HttpStatus.CREATED).body(nodeMapper.toResponse(savedNode));
   }
 
   @GetMapping
   public ResponseEntity<List<NodeResponse>> getAllNodes(
       Authentication authentication, @PathVariable String projectName) {
-
-    Client client = authenticationService.getAuthenticatedClient(authentication);
-    String nickname = client.getNickname();
+    String nickname = authentication.getName();
     Project project =
         projectService
             .findByClientNicknameAndName(nickname, projectName)
@@ -75,7 +69,7 @@ public class NodeController {
 
     List<NodeResponse> nodes =
         nodeService.findAllByProject(project).stream()
-            .map(this::mapToResponse)
+            .map(nodeMapper::toResponse)
             .collect(Collectors.toList());
 
     return ResponseEntity.ok(nodes);
@@ -86,12 +80,10 @@ public class NodeController {
       Authentication authentication,
       @PathVariable String projectName,
       @PathVariable String nodeName) {
-
-    Client client = authenticationService.getAuthenticatedClient(authentication);
-    String nickname = client.getNickname();
+    String nickname = authentication.getName();
     return nodeService
         .findByProjectClientNicknameAndProjectNameAndName(nickname, projectName, nodeName)
-        .map(node -> ResponseEntity.ok(mapToResponse(node)))
+        .map(node -> ResponseEntity.ok(nodeMapper.toResponse(node)))
         .orElse(ResponseEntity.notFound().build());
   }
 
@@ -100,9 +92,7 @@ public class NodeController {
       Authentication authentication,
       @PathVariable String projectName,
       @PathVariable String nodeName) {
-
-    Client client = authenticationService.getAuthenticatedClient(authentication);
-    String nickname = client.getNickname();
+    String nickname = authentication.getName();
     Node node =
         nodeService
             .findByProjectClientNicknameAndProjectNameAndName(nickname, projectName, nodeName)
@@ -110,14 +100,5 @@ public class NodeController {
 
     nodeService.deleteNode(node.getId());
     return ResponseEntity.noContent().build();
-  }
-
-  private NodeResponse mapToResponse(Node node) {
-    return NodeResponse.builder()
-        .id(node.getId())
-        .name(node.getName())
-        .beschreibung(node.getBeschreibung())
-        .content(node.getContent())
-        .build();
   }
 }
