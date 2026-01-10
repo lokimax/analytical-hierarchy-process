@@ -1,18 +1,29 @@
-# Ignore Play! working directory #
-bin/
-/db
-.eclipse
-/lib/
-/logs/
-/modules
-/project/project
-/project/target
-/target
-tmp/
-test-result
-server.pid
-*.eml
-/dist/
-.cache
-.sbtserver*
+target/
+node_modules/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.idea/
+*.iml
+.DS_Store
 
+# H2 Database files
+*.mv.db
+*.trace.db
+*.lock.db
+
+# Editor and IDE
+.editorconfig
+.vscode/
+
+# Angular build cache
+.angular/
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+# Feature roadmap and local notes (not for commit)
+FEATURES.md
