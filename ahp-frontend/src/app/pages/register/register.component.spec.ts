@@ -41,6 +41,17 @@ describe('RegisterComponent', () => {
     expect(component.isSubmitting()).toBeFalse();
     expect(component.error()).toBe('');
     expect(component.success()).toBe('');
+    expect(component.showPassword()).toBeFalse();
+  });
+
+  it('should toggle password visibility', () => {
+    expect(component.showPassword()).toBeFalse();
+    
+    component.togglePasswordVisibility();
+    expect(component.showPassword()).toBeTrue();
+    
+    component.togglePasswordVisibility();
+    expect(component.showPassword()).toBeFalse();
   });
 
   it('should show validation error when fields are empty', () => {
