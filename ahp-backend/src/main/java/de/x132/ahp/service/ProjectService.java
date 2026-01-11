@@ -53,4 +53,31 @@ public class ProjectService {
   public boolean existsByClientAndName(Client client, String name) {
     return projectRepository.findByClientAndName(client, name).isPresent();
   }
+
+  /**
+   * Check if a user owns a project.
+   *
+   * @param projectId the project ID
+   * @param user the user to check
+   * @return true if the user owns the project, false otherwise
+   */
+  public boolean isOwner(Long projectId, Client user) {
+    return projectRepository
+        .findById(projectId)
+        .map(project -> project.getClient().equals(user))
+        .orElse(false);
+  }
+
+  /**
+   * Get a project if the user owns it.
+   *
+   * @param projectId the project ID
+   * @param user the user who should own the project
+   * @return an Optional containing the project if the user owns it, empty otherwise
+   */
+  public Optional<Project> getByIdAndOwner(Long projectId, Client user) {
+    return projectRepository
+        .findById(projectId)
+        .filter(project -> project.getClient().equals(user));
+  }
 }

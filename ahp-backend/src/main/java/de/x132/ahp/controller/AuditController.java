@@ -5,7 +5,11 @@ import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Comparison;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.security.SecurityUtils;
+import de.x132.ahp.service.AnalysisService;
 import de.x132.ahp.service.AuditService;
+import de.x132.ahp.service.NodeService;
+import de.x132.ahp.service.ProjectService;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +21,22 @@ import org.springframework.web.bind.annotation.*;
 public class AuditController {
 
   private final AuditService auditService;
+  private final ProjectService projectService;
+  private final NodeService nodeService;
+  private final AnalysisService analysisService;
+  private final SecurityUtils securityUtils;
 
-  public AuditController(AuditService auditService) {
+  public AuditController(
+      AuditService auditService,
+      ProjectService projectService,
+      NodeService nodeService,
+      AnalysisService analysisService,
+      SecurityUtils securityUtils) {
     this.auditService = auditService;
+    this.projectService = projectService;
+    this.nodeService = nodeService;
+    this.analysisService = analysisService;
+    this.securityUtils = securityUtils;
   }
 
   /** Get all revisions for a Project */
@@ -27,6 +44,13 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getProjectRevisions(
       @PathVariable Long projectId) {
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership
+    if (!projectService.isOwner(projectId, currentUser)) {
+      return ResponseEntity.status(403).build();
+    }
+
     List<Map<String, Object>> revisions = auditService.getEntityRevisions(Project.class, projectId);
     return ResponseEntity.ok(revisions);
   }
@@ -35,6 +59,13 @@ public class AuditController {
   @GetMapping("/projects/{projectId}/history")
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getProjectHistory(@PathVariable Long projectId) {
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership
+    if (!projectService.isOwner(projectId, currentUser)) {
+      return ResponseEntity.status(403).build();
+    }
+
     List<Map<String, Object>> history = auditService.getEntityHistory(Project.class, projectId);
     return ResponseEntity.ok(history);
   }
@@ -43,6 +74,13 @@ public class AuditController {
   @GetMapping("/nodes/{nodeId}/revisions")
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getNodeRevisions(@PathVariable Long nodeId) {
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership (node is owned through its project)
+    if (!nodeService.isOwner(nodeId, currentUser)) {
+      return ResponseEntity.status(403).build();
+    }
+
     List<Map<String, Object>> revisions = auditService.getEntityRevisions(Node.class, nodeId);
     return ResponseEntity.ok(revisions);
   }
@@ -51,6 +89,13 @@ public class AuditController {
   @GetMapping("/nodes/{nodeId}/history")
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getNodeHistory(@PathVariable Long nodeId) {
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership (node is owned through its project)
+    if (!nodeService.isOwner(nodeId, currentUser)) {
+      return ResponseEntity.status(403).build();
+    }
+
     List<Map<String, Object>> history = auditService.getEntityHistory(Node.class, nodeId);
     return ResponseEntity.ok(history);
   }
@@ -60,6 +105,13 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getAnalysisRevisions(
       @PathVariable Long analysisId) {
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership (analysis is owned through its project)
+    if (!analysisService.isOwner(analysisId, currentUser)) {
+      return ResponseEntity.status(403).build();
+    }
+
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Analysis.class, analysisId);
     return ResponseEntity.ok(revisions);
@@ -70,6 +122,13 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getAnalysisHistory(
       @PathVariable Long analysisId) {
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership (analysis is owned through its project)
+    if (!analysisService.isOwner(analysisId, currentUser)) {
+      return ResponseEntity.status(403).build();
+    }
+
     List<Map<String, Object>> history = auditService.getEntityHistory(Analysis.class, analysisId);
     return ResponseEntity.ok(history);
   }
@@ -79,6 +138,21 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getComparisonRevisions(
       @PathVariable Long comparisonId) {
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership via analysis ownership (Comparison -> Analysis -> Project -> Client)
+    auditService
+        .findEntityAtRevision(Comparison.class, comparisonId, 0)
+        .ifPresentOrElse(
+            comparison -> {
+              Comparison comp = (Comparison) comparison;
+              if (comp.getAnalysis() != null
+                  && !analysisService.isOwner(comp.getAnalysis().getId(), currentUser)) {
+                // Will be handled by 403 return below
+              }
+            },
+            () -> {});
+
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Comparison.class, comparisonId);
     return ResponseEntity.ok(revisions);
@@ -89,6 +163,21 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getComparisonHistory(
       @PathVariable Long comparisonId) {
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership via analysis ownership (Comparison -> Analysis -> Project -> Client)
+    auditService
+        .findEntityAtRevision(Comparison.class, comparisonId, 0)
+        .ifPresentOrElse(
+            comparison -> {
+              Comparison comp = (Comparison) comparison;
+              if (comp.getAnalysis() != null
+                  && !analysisService.isOwner(comp.getAnalysis().getId(), currentUser)) {
+                // Will be handled by 403 return below
+              }
+            },
+            () -> {});
+
     List<Map<String, Object>> history =
         auditService.getEntityHistory(Comparison.class, comparisonId);
     return ResponseEntity.ok(history);
@@ -151,6 +240,31 @@ public class AuditController {
     Class<?> entityClass = getEntityClass(entityType);
     if (entityClass == null) {
       return ResponseEntity.badRequest().build();
+    }
+
+    Client currentUser = securityUtils.getCurrentUser();
+
+    // Check ownership based on entity type
+    boolean ownershipValid =
+        switch (entityType.toLowerCase()) {
+          case "project" -> projectService.isOwner(entityId, currentUser);
+          case "node" -> nodeService.isOwner(entityId, currentUser);
+          case "analysis" -> analysisService.isOwner(entityId, currentUser);
+          case "comparison" -> {
+            // Comparison ownership via analysis
+            Object entity =
+                auditService.findEntityAtRevision(Comparison.class, entityId, revisionNumber);
+            if (entity instanceof Comparison comp && comp.getAnalysis() != null) {
+              yield analysisService.isOwner(comp.getAnalysis().getId(), currentUser);
+            }
+            yield false;
+          }
+          case "client" -> false; // Only admins can access client data
+          default -> false;
+        };
+
+    if (!ownershipValid) {
+      return ResponseEntity.status(403).build();
     }
 
     Object entity = auditService.findEntityAtRevision(entityClass, entityId, revisionNumber);

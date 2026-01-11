@@ -1,6 +1,7 @@
 package de.x132.ahp.service;
 
 import de.x132.ahp.model.Analysis;
+import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
 import de.x132.ahp.repository.AnalysisRepository;
 import java.util.List;
@@ -40,5 +41,32 @@ public class AnalysisService {
 
   public void deleteAnalysis(Long id) {
     analysisRepository.deleteById(id);
+  }
+
+  /**
+   * Check if a user owns an analysis (by checking project ownership).
+   *
+   * @param analysisId the analysis ID
+   * @param user the user to check
+   * @return true if the user owns the analysis (via project ownership), false otherwise
+   */
+  public boolean isOwner(Long analysisId, Client user) {
+    return analysisRepository
+        .findById(analysisId)
+        .map(analysis -> analysis.getProject().getClient().equals(user))
+        .orElse(false);
+  }
+
+  /**
+   * Get an analysis if the user owns it (via project ownership).
+   *
+   * @param analysisId the analysis ID
+   * @param user the user who should own the analysis
+   * @return an Optional containing the analysis if the user owns it, empty otherwise
+   */
+  public Optional<Analysis> getByIdAndOwner(Long analysisId, Client user) {
+    return analysisRepository
+        .findById(analysisId)
+        .filter(analysis -> analysis.getProject().getClient().equals(user));
   }
 }

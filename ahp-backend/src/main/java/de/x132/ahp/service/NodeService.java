@@ -1,5 +1,6 @@
 package de.x132.ahp.service;
 
+import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Connection;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
@@ -78,5 +79,32 @@ public class NodeService {
 
   public boolean existsByProjectAndName(Project project, String name) {
     return nodeRepository.findByProjectAndName(project, name).isPresent();
+  }
+
+  /**
+   * Check if a user owns a node (by checking project ownership).
+   *
+   * @param nodeId the node ID
+   * @param user the user to check
+   * @return true if the user owns the node (via project ownership), false otherwise
+   */
+  public boolean isOwner(Long nodeId, Client user) {
+    return nodeRepository
+        .findById(nodeId)
+        .map(node -> node.getProject().getClient().equals(user))
+        .orElse(false);
+  }
+
+  /**
+   * Get a node if the user owns it (via project ownership).
+   *
+   * @param nodeId the node ID
+   * @param user the user who should own the node
+   * @return an Optional containing the node if the user owns it, empty otherwise
+   */
+  public Optional<Node> getByIdAndOwner(Long nodeId, Client user) {
+    return nodeRepository
+        .findById(nodeId)
+        .filter(node -> node.getProject().getClient().equals(user));
   }
 }
