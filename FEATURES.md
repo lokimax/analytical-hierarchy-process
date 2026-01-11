@@ -293,7 +293,46 @@
 
 ---
 
-## Top 5 MOST CRITICAL (Next Focus)
+## 10. Architectural Decisions & Migrations
+
+### Spring Boot 4.3 Upgrade
+**Priority:** ⭐⭐⭐⭐⭐ (MOST CRITICAL)
+**Status:** Not Started (Planned)
+**Description:** Upgrade from Spring Boot 3.1.5 to 4.3 for latest features, performance improvements, and Java 21+ support.
+**Rationale:**
+- Modern LTS version with extended support
+- Better performance optimizations
+- Improved cloud-native features
+- Latest Spring Security enhancements
+
+### Migration Away from Hibernate
+**Priority:** ⭐⭐⭐⭐
+**Status:** Not Started (Planned for v2.1)
+**Description:** Migrate from Hibernate ORM to a lighter-weight persistence solution (Jakarta Persistence API direct or specialized library).
+**Rationale:**
+- Hibernate adds significant memory overhead for audit-heavy operations
+- Our use case is primarily CRUD with audit tracking, not complex ORM features
+- Audit trail via Envers creates duplicate data structures
+- Lighter persistence layer would improve performance
+- Direct SQL or lightweight ORM (Jooq, QueryDSL) more suitable for MCDM domain
+
+**Planned Approach:**
+1. Evaluate alternatives: JOOQ, MyBatis, Direct JDBC with thin abstraction
+2. Migrate Repositories to new persistence layer incrementally
+3. Keep Audit Logging via custom implementation (AuditService)
+4. Performance testing and comparison
+5. Zero downtime migration via feature toggles
+
+**Expected Benefits:**
+- 20-30% reduction in application memory footprint
+- Faster query execution without ORM overhead
+- More control over generated SQL
+- Simpler Audit implementation without Envers duplication
+- Better support for complex hierarchical queries
+
+---
+
+
 
 1. ✅ **Edit Project** - Complete (2026-01-10)
 2. ✅ **Delete Project** - Complete (2026-01-10)
@@ -370,5 +409,5 @@
 
 ---
 
-**Last Updated:** 11. Januar 2026 10:45
-**Latest Session:** PR #5 in review - Comprehensive Audit Logging with Hibernate Envers + Security Controls
+**Last Updated:** 11. Januar 2026 11:15
+**Latest Session:** Architektur-Entscheidungen - Spring Boot 4.3 Upgrade + Migration away from Hibernate
