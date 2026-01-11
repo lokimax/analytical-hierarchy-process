@@ -17,13 +17,16 @@ export class RegisterComponent {
     name: '',
     surename: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   };
 
   isSubmitting = signal(false);
   error = signal('');
   success = signal('');
   showPassword = signal(false);
+  showConfirmPassword = signal(false);
+  passwordsMatch = signal(true);
 
   constructor(private authService: AuthService, private router: Router) {}
 
@@ -31,14 +34,36 @@ export class RegisterComponent {
     this.showPassword.set(!this.showPassword());
   }
 
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword.set(!this.showConfirmPassword());
+  }
+
+  onPasswordChange(): void {
+    this.updatePasswordMatch();
+  }
+
+  onConfirmPasswordChange(): void {
+    this.updatePasswordMatch();
+  }
+
+  private updatePasswordMatch(): void {
+    const match = this.form.password === this.form.confirmPassword && this.form.confirmPassword.length > 0;
+    this.passwordsMatch.set(match);
+  }
+
   register(): void {
-    if (!this.form.nickname || !this.form.name || !this.form.surename || !this.form.email || !this.form.password) {
+    if (!this.form.nickname || !this.form.name || !this.form.surename || !this.form.email || !this.form.password || !this.form.confirmPassword) {
       this.error.set('Please fill in all fields');
       return;
     }
 
     if (this.form.password.length < 8) {
       this.error.set('Password must be at least 8 characters');
+      return;
+    }
+
+    if (this.form.password !== this.form.confirmPassword) {
+      this.error.set('Passwords do not match');
       return;
     }
 

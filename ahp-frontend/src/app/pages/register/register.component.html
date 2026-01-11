@@ -66,6 +66,7 @@
                   autocomplete="new-password"
                   required
                   minlength="8"
+                  (input)="onPasswordChange()"
                 >
                 <button 
                   type="button" 
@@ -78,6 +79,40 @@
               </div>
             </div>
 
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label">Confirm Password</label>
+              <div class="input-group">
+                <input 
+                  [type]="showConfirmPassword() ? 'text' : 'password'"
+                  [class]="'form-control ' + (form.confirmPassword.length > 0 ? (passwordsMatch() ? 'is-valid' : 'is-invalid') : '')"
+                  id="confirmPassword"
+                  [(ngModel)]="form.confirmPassword"
+                  name="confirmPassword"
+                  autocomplete="new-password"
+                  required
+                  (input)="onConfirmPasswordChange()"
+                >
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary" 
+                  (click)="toggleConfirmPasswordVisibility()"
+                  tabindex="-1"
+                >
+                  <i [ngClass]="showConfirmPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                </button>
+                <span 
+                  *ngIf="form.confirmPassword.length > 0" 
+                  [class]="'input-group-text ' + (passwordsMatch() ? 'text-success' : 'text-danger')"
+                >
+                  <i [ngClass]="passwordsMatch() ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
+                </span>
+              </div>
+              <div *ngIf="form.confirmPassword.length > 0" [class]="'form-text ' + (passwordsMatch() ? 'text-success' : 'text-danger')">
+                <small *ngIf="passwordsMatch()">✓ Passwords match</small>
+                <small *ngIf="!passwordsMatch()">✗ Passwords do not match</small>
+              </div>
+            </div>
+
             <div *ngIf="error()" class="alert alert-danger" role="alert">
               {{ error() }}
             </div>
@@ -86,7 +121,7 @@
               {{ success() }}
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mb-3" [disabled]="isSubmitting()">
+            <button type="submit" class="btn btn-primary w-100 mb-3" [disabled]="isSubmitting() || (form.confirmPassword.length > 0 && !passwordsMatch())">
               <span *ngIf="!isSubmitting()">Register</span>
               <span *ngIf="isSubmitting()">
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
