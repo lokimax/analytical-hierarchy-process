@@ -22,6 +22,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 /**
  * JPA Entity for user/client.
@@ -36,6 +38,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = {"projects", "tokens"})
+@Audited
 public class Client {
 
   @Id
@@ -53,12 +56,14 @@ public class Client {
   private String email;
 
   @Column(name = "password", nullable = false, length = 255)
+  @NotAudited // Don't track password changes in audit log for security
   private String password;
 
   @Column(name = "surename", nullable = false, length = 32)
   private String surename;
 
   @Column(name = "activation_code", unique = true, length = 128)
+  @NotAudited // Don't track activation codes for security
   private String activationCode;
 
   @Enumerated(EnumType.STRING)
@@ -67,10 +72,12 @@ public class Client {
 
   @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
+  @NotAudited
   private List<Project> projects = new ArrayList<>();
 
   @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
+  @NotAudited
   private List<Token> tokens = new ArrayList<>();
 
   @CreationTimestamp

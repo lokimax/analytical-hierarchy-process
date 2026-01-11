@@ -86,6 +86,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Hibernate Envers for Audit Logging -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-envers</artifactId>
+        </dependency>
+
         <!-- Development Tools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

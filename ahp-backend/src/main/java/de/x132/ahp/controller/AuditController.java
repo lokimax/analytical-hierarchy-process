@@ -1,0 +1,171 @@
+package de.x132.ahp.controller;
+
+import de.x132.ahp.model.Analysis;
+import de.x132.ahp.model.Client;
+import de.x132.ahp.model.Comparison;
+import de.x132.ahp.model.Node;
+import de.x132.ahp.model.Project;
+import de.x132.ahp.service.AuditService;
+import java.util.List;
+import java.util.Map;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/audit")
+public class AuditController {
+
+  private final AuditService auditService;
+
+  public AuditController(AuditService auditService) {
+    this.auditService = auditService;
+  }
+
+  /** Get all revisions for a Project */
+  @GetMapping("/projects/{projectId}/revisions")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getProjectRevisions(
+      @PathVariable Long projectId) {
+    List<Map<String, Object>> revisions = auditService.getEntityRevisions(Project.class, projectId);
+    return ResponseEntity.ok(revisions);
+  }
+
+  /** Get complete history with changes for a Project */
+  @GetMapping("/projects/{projectId}/history")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getProjectHistory(@PathVariable Long projectId) {
+    List<Map<String, Object>> history = auditService.getEntityHistory(Project.class, projectId);
+    return ResponseEntity.ok(history);
+  }
+
+  /** Get all revisions for a Node */
+  @GetMapping("/nodes/{nodeId}/revisions")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getNodeRevisions(@PathVariable Long nodeId) {
+    List<Map<String, Object>> revisions = auditService.getEntityRevisions(Node.class, nodeId);
+    return ResponseEntity.ok(revisions);
+  }
+
+  /** Get complete history for a Node */
+  @GetMapping("/nodes/{nodeId}/history")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getNodeHistory(@PathVariable Long nodeId) {
+    List<Map<String, Object>> history = auditService.getEntityHistory(Node.class, nodeId);
+    return ResponseEntity.ok(history);
+  }
+
+  /** Get all revisions for an Analysis */
+  @GetMapping("/analyses/{analysisId}/revisions")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getAnalysisRevisions(
+      @PathVariable Long analysisId) {
+    List<Map<String, Object>> revisions =
+        auditService.getEntityRevisions(Analysis.class, analysisId);
+    return ResponseEntity.ok(revisions);
+  }
+
+  /** Get complete history for an Analysis */
+  @GetMapping("/analyses/{analysisId}/history")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getAnalysisHistory(
+      @PathVariable Long analysisId) {
+    List<Map<String, Object>> history = auditService.getEntityHistory(Analysis.class, analysisId);
+    return ResponseEntity.ok(history);
+  }
+
+  /** Get all revisions for a Comparison */
+  @GetMapping("/comparisons/{comparisonId}/revisions")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getComparisonRevisions(
+      @PathVariable Long comparisonId) {
+    List<Map<String, Object>> revisions =
+        auditService.getEntityRevisions(Comparison.class, comparisonId);
+    return ResponseEntity.ok(revisions);
+  }
+
+  /** Get complete history for a Comparison */
+  @GetMapping("/comparisons/{comparisonId}/history")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getComparisonHistory(
+      @PathVariable Long comparisonId) {
+    List<Map<String, Object>> history =
+        auditService.getEntityHistory(Comparison.class, comparisonId);
+    return ResponseEntity.ok(history);
+  }
+
+  /** Get all revisions for a Client (admin only) */
+  @GetMapping("/clients/{clientId}/revisions")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<List<Map<String, Object>>> getClientRevisions(@PathVariable Long clientId) {
+    List<Map<String, Object>> revisions = auditService.getEntityRevisions(Client.class, clientId);
+    return ResponseEntity.ok(revisions);
+  }
+
+  /** Get complete history for a Client (admin only) */
+  @GetMapping("/clients/{clientId}/history")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<List<Map<String, Object>>> getClientHistory(@PathVariable Long clientId) {
+    List<Map<String, Object>> history = auditService.getEntityHistory(Client.class, clientId);
+    return ResponseEntity.ok(history);
+  }
+
+  /** Get recent changes for all Projects */
+  @GetMapping("/projects/recent")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getRecentProjectChanges(
+      @RequestParam(defaultValue = "50") int limit) {
+    List<Map<String, Object>> changes = auditService.getAllChanges(Project.class, limit);
+    return ResponseEntity.ok(changes);
+  }
+
+  /** Get recent changes for all Nodes */
+  @GetMapping("/nodes/recent")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getRecentNodeChanges(
+      @RequestParam(defaultValue = "50") int limit) {
+    List<Map<String, Object>> changes = auditService.getAllChanges(Node.class, limit);
+    return ResponseEntity.ok(changes);
+  }
+
+  /** Get recent changes for all Analyses */
+  @GetMapping("/analyses/recent")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<List<Map<String, Object>>> getRecentAnalysisChanges(
+      @RequestParam(defaultValue = "50") int limit) {
+    List<Map<String, Object>> changes = auditService.getAllChanges(Analysis.class, limit);
+    return ResponseEntity.ok(changes);
+  }
+
+  /** Get entity at a specific revision */
+  @GetMapping("/{entityType}/{entityId}/revision/{revisionNumber}")
+  @PreAuthorize("hasRole('USER')")
+  public ResponseEntity<Object> getEntityAtRevision(
+      @PathVariable String entityType,
+      @PathVariable Long entityId,
+      @PathVariable Number revisionNumber) {
+
+    Class<?> entityClass = getEntityClass(entityType);
+    if (entityClass == null) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    Object entity = auditService.findEntityAtRevision(entityClass, entityId, revisionNumber);
+    if (entity == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    return ResponseEntity.ok(entity);
+  }
+
+  private Class<?> getEntityClass(String entityType) {
+    return switch (entityType.toLowerCase()) {
+      case "project" -> Project.class;
+      case "node" -> Node.class;
+      case "analysis" -> Analysis.class;
+      case "comparison" -> Comparison.class;
+      case "client" -> Client.class;
+      default -> null;
+    };
+  }
+}
