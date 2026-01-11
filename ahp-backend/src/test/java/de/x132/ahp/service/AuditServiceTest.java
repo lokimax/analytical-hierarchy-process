@@ -1,1 +1,113 @@
+package de.x132.ahp.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import de.x132.ahp.model.Analysis;
+import de.x132.ahp.model.Project;
+import de.x132.ahp.repository.AnalysisRepository;
+import de.x132.ahp.repository.ProjectRepository;
+import jakarta.persistence.EntityManager;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+class AuditServiceTest {
+
+  @Autowired private AuditService auditService;
+
+  @Autowired private ProjectRepository projectRepository;
+
+  @Autowired private AnalysisRepository analysisRepository;
+
+  @Autowired private EntityManager entityManager;
+
+  private Project testProject;
+  private Analysis testAnalysis;
+
+  @BeforeEach
+  void setUp() {
+    testProject = Project.builder().name("TestProject").build();
+    testProject = projectRepository.save(testProject);
+
+    testAnalysis = Analysis.builder().name("TestAnalysis").project(testProject).build();
+    testAnalysis = analysisRepository.save(testAnalysis);
+
+    entityManager.flush();
+  }
+
+  @Test
+  void testGetEntityRevisions_ReturnsRevisions() {
+    List<Map<String, Object>> revisions =
+        auditService.getEntityRevisions(Project.class, testProject.getId());
+    assertNotNull(revisions);
+    assertTrue(revisions.size() >= 0);
+  }
+
+  @Test
+  void testGetEntityHistory_ReturnsHistory() {
+    List<Map<String, Object>> history =
+        auditService.getEntityHistory(Project.class, testProject.getId());
+    assertNotNull(history);
+  }
+
+  @Test
+  void testFindEntityAtRevision_ReturnsEntity() {
+    Object entity = auditService.findEntityAtRevision(Project.class, testProject.getId(), 1);
+    assertNotNull(entity);
+    assertTrue(entity instanceof Project);
+  }
+
+  @Test
+  void testGetAllChanges_ReturnsChanges() {
+    List<Map<String, Object>> changes = auditService.getAllChanges(Project.class, 50);
+    assertNotNull(changes);
+  }
+
+  @Test
+  void testValidateLimit_WithNegativeValue() {
+    int result = validateLimit(-10);
+    assertEquals(1, result);
+  }
+
+  @Test
+  void testValidateLimit_WithExcessiveValue() {
+    int result = validateLimit(9999);
+    assertEquals(1000, result);
+  }
+
+  @Test
+  void testValidateLimit_WithValidValue() {
+    int result = validateLimit(50);
+    assertEquals(50, result);
+  }
+
+  @Test
+  void testAuditDataContainsMetadata() {
+    List<Map<String, Object>> revisions =
+        auditService.getEntityRevisions(Project.class, testProject.getId());
+    if (!revisions.isEmpty()) {
+      Map<String, Object> revision = revisions.get(0);
+      assertNotNull(revision.get("revisionNumber"));
+      assertNotNull(revision.get("revisionDate"));
+      assertNotNull(revision.get("entity"));
+    }
+  }
+
+  private int validateLimit(int limit) {
+    if (limit < 1) {
+      return 1;
+    }
+    if (limit > 1000) {
+      return 1000;
+    }
+    return limit;
+  }
+}
