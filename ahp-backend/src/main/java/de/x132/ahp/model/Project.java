@@ -24,6 +24,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 /**
  * JPA Entity for AHP project.
@@ -40,6 +42,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = {"client", "nodes", "connections", "prioritisations"})
+@Audited
 public class Project {
 
   @Id
@@ -59,14 +62,17 @@ public class Project {
 
   @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
+  @NotAudited
   private List<Node> nodes = new ArrayList<>();
 
   @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
+  @NotAudited
   private List<Connection> connections = new ArrayList<>();
 
   @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
+  @NotAudited
   private List<Prioritisation> prioritisations = new ArrayList<>();
 
   @CreationTimestamp

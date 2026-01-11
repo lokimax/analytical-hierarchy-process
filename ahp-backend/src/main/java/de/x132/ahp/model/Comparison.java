@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 /**
  * JPA Entity for pairwise comparison.
@@ -33,6 +34,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Audited
 @ToString(exclude = {"prioritisation", "parent", "leftNode", "rightNode"})
 public class Comparison implements Comparable<Comparison> {
 

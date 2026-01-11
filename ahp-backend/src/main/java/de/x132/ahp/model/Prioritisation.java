@@ -26,6 +26,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 /**
  * JPA Entity for prioritization.
@@ -41,6 +42,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Audited
 @ToString(exclude = {"project", "comparisons"})
 public class Prioritisation {
 
