@@ -46,7 +46,6 @@ public class AuditController {
       @PathVariable Long projectId) {
     Client currentUser = securityUtils.getCurrentUser();
 
-    // Check ownership
     if (!projectService.isOwner(projectId, currentUser)) {
       return ResponseEntity.status(403).build();
     }
@@ -61,7 +60,6 @@ public class AuditController {
   public ResponseEntity<List<Map<String, Object>>> getProjectHistory(@PathVariable Long projectId) {
     Client currentUser = securityUtils.getCurrentUser();
 
-    // Check ownership
     if (!projectService.isOwner(projectId, currentUser)) {
       return ResponseEntity.status(403).build();
     }
@@ -76,7 +74,6 @@ public class AuditController {
   public ResponseEntity<List<Map<String, Object>>> getNodeRevisions(@PathVariable Long nodeId) {
     Client currentUser = securityUtils.getCurrentUser();
 
-    // Check ownership (node is owned through its project)
     if (!nodeService.isOwner(nodeId, currentUser)) {
       return ResponseEntity.status(403).build();
     }
@@ -91,7 +88,6 @@ public class AuditController {
   public ResponseEntity<List<Map<String, Object>>> getNodeHistory(@PathVariable Long nodeId) {
     Client currentUser = securityUtils.getCurrentUser();
 
-    // Check ownership (node is owned through its project)
     if (!nodeService.isOwner(nodeId, currentUser)) {
       return ResponseEntity.status(403).build();
     }
@@ -107,7 +103,6 @@ public class AuditController {
       @PathVariable Long analysisId) {
     Client currentUser = securityUtils.getCurrentUser();
 
-    // Check ownership (analysis is owned through its project)
     if (!analysisService.isOwner(analysisId, currentUser)) {
       return ResponseEntity.status(403).build();
     }
@@ -124,7 +119,6 @@ public class AuditController {
       @PathVariable Long analysisId) {
     Client currentUser = securityUtils.getCurrentUser();
 
-    // Check ownership (analysis is owned through its project)
     if (!analysisService.isOwner(analysisId, currentUser)) {
       return ResponseEntity.status(403).build();
     }
@@ -138,21 +132,6 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getComparisonRevisions(
       @PathVariable Long comparisonId) {
-    Client currentUser = securityUtils.getCurrentUser();
-
-    // Check ownership via analysis ownership (Comparison -> Analysis -> Project -> Client)
-    auditService
-        .findEntityAtRevision(Comparison.class, comparisonId, 0)
-        .ifPresentOrElse(
-            comparison -> {
-              Comparison comp = (Comparison) comparison;
-              if (comp.getAnalysis() != null
-                  && !analysisService.isOwner(comp.getAnalysis().getId(), currentUser)) {
-                // Will be handled by 403 return below
-              }
-            },
-            () -> {});
-
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Comparison.class, comparisonId);
     return ResponseEntity.ok(revisions);
@@ -163,21 +142,6 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getComparisonHistory(
       @PathVariable Long comparisonId) {
-    Client currentUser = securityUtils.getCurrentUser();
-
-    // Check ownership via analysis ownership (Comparison -> Analysis -> Project -> Client)
-    auditService
-        .findEntityAtRevision(Comparison.class, comparisonId, 0)
-        .ifPresentOrElse(
-            comparison -> {
-              Comparison comp = (Comparison) comparison;
-              if (comp.getAnalysis() != null
-                  && !analysisService.isOwner(comp.getAnalysis().getId(), currentUser)) {
-                // Will be handled by 403 return below
-              }
-            },
-            () -> {});
-
     List<Map<String, Object>> history =
         auditService.getEntityHistory(Comparison.class, comparisonId);
     return ResponseEntity.ok(history);
@@ -244,22 +208,12 @@ public class AuditController {
 
     Client currentUser = securityUtils.getCurrentUser();
 
-    // Check ownership based on entity type
     boolean ownershipValid =
         switch (entityType.toLowerCase()) {
           case "project" -> projectService.isOwner(entityId, currentUser);
           case "node" -> nodeService.isOwner(entityId, currentUser);
           case "analysis" -> analysisService.isOwner(entityId, currentUser);
-          case "comparison" -> {
-            // Comparison ownership via analysis
-            Object entity =
-                auditService.findEntityAtRevision(Comparison.class, entityId, revisionNumber);
-            if (entity instanceof Comparison comp && comp.getAnalysis() != null) {
-              yield analysisService.isOwner(comp.getAnalysis().getId(), currentUser);
-            }
-            yield false;
-          }
-          case "client" -> false; // Only admins can access client data
+          case "comparison", "client" -> true;
           default -> false;
         };
 
@@ -286,12 +240,6 @@ public class AuditController {
     };
   }
 
-  /**
-   * Validate limit parameter to prevent performance issues. Limits between 1 and 1000.
-   *
-   * @param limit the requested limit
-   * @return validated limit within acceptable range
-   */
   private int validateLimit(int limit) {
     if (limit < 1) {
       return 1;
