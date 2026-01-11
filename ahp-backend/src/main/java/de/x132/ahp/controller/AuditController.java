@@ -213,7 +213,7 @@ public class AuditController {
           case "project" -> projectService.isOwner(entityId, currentUser);
           case "node" -> nodeService.isOwner(entityId, currentUser);
           case "analysis" -> analysisService.isOwner(entityId, currentUser);
-          case "comparison", "client" -> true;
+          case "client" -> entityId != null && entityId.equals(currentUser.getId());
           default -> false;
         };
 
