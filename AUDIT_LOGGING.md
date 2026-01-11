@@ -23,7 +23,7 @@ This application implements comprehensive audit logging using **Hibernate Envers
 
 #### Revision History
 - View all historical versions of any audited entity
-- See who made changes and when (via `AuditorAware`)
+- See who made changes and when (via custom `AuditRevisionListener` and `AuditRevision` entity)
 - Track the type of change: CREATE, UPDATE, DELETE
 - Restore or view data from any previous revision
 
