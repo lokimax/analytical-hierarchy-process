@@ -20,6 +20,7 @@ import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 /**
  * JPA Entity for connection between nodes.
@@ -44,14 +45,17 @@ public class Connection {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "project_id", nullable = false)
+  @NotAudited
   private Project project;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "source_node_id", nullable = false)
+  @NotAudited
   private Node sourceNode;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "target_node_id", nullable = false)
+  @NotAudited
   private Node targetNode;
 
   @CreationTimestamp
