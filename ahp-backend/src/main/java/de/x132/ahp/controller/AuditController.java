@@ -115,6 +115,7 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getRecentProjectChanges(
       @RequestParam(defaultValue = "50") int limit) {
+    limit = validateLimit(limit);
     List<Map<String, Object>> changes = auditService.getAllChanges(Project.class, limit);
     return ResponseEntity.ok(changes);
   }
@@ -124,6 +125,7 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getRecentNodeChanges(
       @RequestParam(defaultValue = "50") int limit) {
+    limit = validateLimit(limit);
     List<Map<String, Object>> changes = auditService.getAllChanges(Node.class, limit);
     return ResponseEntity.ok(changes);
   }
@@ -133,6 +135,7 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getRecentAnalysisChanges(
       @RequestParam(defaultValue = "50") int limit) {
+    limit = validateLimit(limit);
     List<Map<String, Object>> changes = auditService.getAllChanges(Analysis.class, limit);
     return ResponseEntity.ok(changes);
   }
@@ -167,5 +170,21 @@ public class AuditController {
       case "client" -> Client.class;
       default -> null;
     };
+  }
+
+  /**
+   * Validate limit parameter to prevent performance issues. Limits between 1 and 1000.
+   *
+   * @param limit the requested limit
+   * @return validated limit within acceptable range
+   */
+  private int validateLimit(int limit) {
+    if (limit < 1) {
+      return 1;
+    }
+    if (limit > 1000) {
+      return 1000;
+    }
+    return limit;
   }
 }

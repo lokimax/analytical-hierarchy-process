@@ -1,9 +1,6 @@
 package de.x132.ahp.config;
 
-import jakarta.persistence.EntityManagerFactory;
 import java.util.Optional;
-import org.hibernate.envers.AuditReader;
-import org.hibernate.envers.AuditReaderFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -26,10 +23,5 @@ public class AuditConfig {
       }
       return Optional.of(authentication.getName());
     };
-  }
-
-  @Bean
-  public AuditReader auditReader(EntityManagerFactory entityManagerFactory) {
-    return AuditReaderFactory.get(entityManagerFactory.createEntityManager());
   }
 }
