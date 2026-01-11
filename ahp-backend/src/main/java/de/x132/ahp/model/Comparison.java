@@ -21,6 +21,7 @@ import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 /**
  * JPA Entity for pairwise comparison.
@@ -45,18 +46,22 @@ public class Comparison implements Comparable<Comparison> {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "prioritisation_id", nullable = false)
+  @NotAudited
   private Prioritisation prioritisation;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "parent_node_id", nullable = false)
+  @NotAudited
   private Node parent;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "left_node_id", nullable = false)
+  @NotAudited
   private Node leftNode;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "right_node_id", nullable = false)
+  @NotAudited
   private Node rightNode;
 
   @Column(name = "weight", nullable = false, precision = 10, scale = 2)
