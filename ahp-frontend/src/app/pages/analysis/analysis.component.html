@@ -208,6 +208,12 @@
                       <small class="text-muted" *ngIf="getCriterionConsistency(criterion) && getCriterionConsistency(criterion)!.cr >= 0.1">
                         ({{ getConsistencyStatusText(getCriterionConsistency(criterion)?.cr) }})
                       </small>
+                      <button class="btn btn-sm btn-outline-info ms-auto" 
+                              *ngIf="savedAnalysisId()"
+                              [routerLink]="['/projects', projectName(), 'analyses', savedAnalysisId(), 'sensitivity', criterion.id]"
+                              title="View Sensitivity Analysis for {{ criterion.name }}">
+                        <i class="bi bi-graph-up-arrow"></i> Sensitivity Analysis
+                      </button>
                     </div>
                     <div class="table-responsive">
                       <table class="table table-sm table-bordered">

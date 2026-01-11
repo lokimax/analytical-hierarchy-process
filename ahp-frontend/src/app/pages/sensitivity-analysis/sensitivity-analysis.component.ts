@@ -11,7 +11,7 @@ import { Chart, ChartConfiguration } from 'chart.js/auto';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './sensitivity-analysis.component.html',
-  styleUrl: './sensitivity-analysis.component.css'
+  styleUrls: ['./sensitivity-analysis.component.css']
 })
 export class SensitivityAnalysisComponent implements OnInit, OnDestroy {
   projectName = signal<string>('');
@@ -84,22 +84,27 @@ export class SensitivityAnalysisComponent implements OnInit, OnDestroy {
     if (!data) return;
 
     const labels = data.dataPoints.map(p => `${(p.criterionWeight * 100).toFixed(0)}%`);
-    
-    const datasets = data.alternativeNames.map((name, index) => {
-      const alternativeId = index + 1; // Assuming IDs start at 1
-      const scores = data.dataPoints.map(p => p.alternativeScores[alternativeId] || 0);
-      
-      return {
-        label: name,
-        data: scores,
-        borderColor: this.getColorForIndex(index),
-        backgroundColor: this.getColorForIndex(index, 0.1),
-        borderWidth: 2,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 5
-      };
-    });
+
+    const alternativeEntries = Object.entries(data.alternativeNames || {})
+      .map(([id, name]) => ({ id: Number(id), name }))
+      .sort((a, b) => a.id - b.id);
+
+      const datasets = Object.entries(data.alternativeNames)
+        .sort(([idA], [idB]) => Number(idA) - Number(idB))
+        .map(([idStr, name], index) => {
+          const alternativeId = Number(idStr);
+          const scores = data.dataPoints.map(p => p.alternativeScores[alternativeId] ?? 0);
+          return {
+            label: name,
+            data: scores,
+            borderColor: this.getColorForIndex(index),
+            backgroundColor: this.getColorForIndex(index, 0.1),
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 5
+          };
+        });
 
     const config: ChartConfiguration = {
       type: 'line',
@@ -201,6 +206,6 @@ export class SensitivityAnalysisComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/projects', this.projectName(), 'analyses', this.analysisId()]);
+    this.router.navigate(['/analysis', this.projectName(), this.analysisId()]);
   }
 }

@@ -43,13 +43,13 @@ describe('SensitivityAnalysisComponent', () => {
         description: 'Ranking changes at 30.0% weight: Supplier A overtakes Supplier B'
       }
     ],
-    stability: {
+    stabilityMetrics: {
       stabilityScore: 0.85,
       riskLevel: RiskLevel.LOW,
       toleranceRange: 0.25,
       rankingChangeCount: 1
     },
-    alternativeNames: ['Supplier A', 'Supplier B', 'Supplier C']
+    alternativeNames: { 1: 'Supplier A', 2: 'Supplier B', 3: 'Supplier C' }
   };
 
   beforeEach(async () => {

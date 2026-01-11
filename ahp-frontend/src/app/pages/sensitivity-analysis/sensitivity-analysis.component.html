@@ -30,15 +30,12 @@
       <div class="card-body">
         <div class="row mb-3">
           <div class="col-md-4">
-            <strong>Current Weight:</strong> {{ (result()!.currentWeight * 100).toFixed(1) }}%
+            <strong>Stability Score:</strong> {{ result()!.stabilityMetrics.stabilityScore.toFixed(3) }}
           </div>
           <div class="col-md-4">
-            <strong>Stability Score:</strong> {{ result()!.stability.stabilityScore.toFixed(3) }}
-          </div>
-          <div class="col-md-4">
-            <strong>Risk Level:</strong> 
-            <span [class]="'badge bg-' + getRiskLevelClass(result()!.stability.riskLevel)">
-              {{ getRiskIcon(result()!.stability.riskLevel) }} {{ result()!.stability.riskLevel }}
+            <strong>Risk Level:</strong>
+            <span [class]="'badge bg-' + getRiskLevelClass(result()!.stabilityMetrics.riskLevel)">
+              {{ getRiskIcon(result()!.stabilityMetrics.riskLevel) }} {{ result()!.stabilityMetrics.riskLevel }}
             </span>
           </div>
         </div>
@@ -50,57 +47,45 @@
 
         <!-- Stability Metrics -->
         <div class="card mb-3">
-          <div class="card-header">
-            <h5 class="mb-0">Stability Metrics</h5>
-          </div>
           <div class="card-body">
-            <div class="row">
-              <div class="col-md-6">
-                <p>
-                  <strong>Tolerance Range:</strong> ±{{ (result()!.stability.toleranceRange * 100).toFixed(1) }}%
-                  <br>
-                  <small class="text-muted">
-                    How much the criterion weight can change before ranking changes.
-                  </small>
-                </p>
-              </div>
-              <div class="col-md-6">
-                <p>
-                  <strong>Ranking Changes:</strong> {{ result()!.stability.rankingChangeCount }}
-                  <br>
-                  <small class="text-muted">
-                    Number of times the top-ranked alternative changes across weight range.
-                  </small>
-                </p>
-              </div>
-            </div>
-
-            @if (result()!.stability.riskLevel === 'HIGH') {
-              <div class="alert alert-danger mt-3" role="alert">
-                <strong>⚠️ High Risk Decision!</strong> 
-                The ranking is very sensitive to this criterion's weight. 
-                Small changes can significantly impact the final decision.
-                Consider reviewing your pairwise comparisons carefully.
-              </div>
-            }
-
-            @if (result()!.stability.riskLevel === 'MEDIUM') {
-              <div class="alert alert-warning mt-3" role="alert">
-                <strong>⚠️ Moderate Sensitivity</strong> 
-                The decision is moderately sensitive to this criterion. 
-                Be aware that changes in weight can affect the ranking.
-              </div>
-            }
-
-            @if (result()!.stability.riskLevel === 'LOW') {
-              <div class="alert alert-success mt-3" role="alert">
-                <strong>✅ Stable Decision</strong> 
-                The ranking is robust and not very sensitive to this criterion's weight.
-                The decision is reliable across a wide range of weights.
-              </div>
-            }
+            <p>
+              <strong>Tolerance Range:</strong> ±{{ (result()!.stabilityMetrics.toleranceRange * 100).toFixed(1) }}%
+              <br>
+              <small class="text-muted">
+                How much the criterion weight can change before ranking changes.
+              </small>
+            </p>
+            <p>
+              <strong>Ranking Changes:</strong> {{ result()!.stabilityMetrics.rankingChangeCount }}
+              <br>
+              <small class="text-muted">
+                Number of times the top-ranked alternative changes across weight range.
+              </small>
+            </p>
           </div>
         </div>
+
+        <!-- Risk Alerts -->
+        @if (result()!.stabilityMetrics.riskLevel === 'HIGH') {
+          <div class="alert alert-danger mt-3" role="alert">
+            <strong>⚠️ High Risk Decision!</strong>
+            The ranking is very sensitive to this criterion's weight.
+            Small changes can significantly impact the final decision.
+            Consider reviewing your pairwise comparisons carefully.
+          </div>
+        } @else if (result()!.stabilityMetrics.riskLevel === 'MEDIUM') {
+          <div class="alert alert-warning mt-3" role="alert">
+            <strong>⚠️ Moderate Sensitivity</strong>
+            The decision is moderately sensitive to this criterion.
+            Be aware that changes in weight can affect the ranking.
+          </div>
+        } @else if (result()!.stabilityMetrics.riskLevel === 'LOW') {
+          <div class="alert alert-success mt-3" role="alert">
+            <strong>✅ Stable Decision</strong>
+            The ranking is robust and not very sensitive to this criterion's weight.
+            The decision is reliable across a wide range of weights.
+          </div>
+        }
 
         <!-- Critical Points -->
         @if (result()!.criticalPoints.length > 0) {

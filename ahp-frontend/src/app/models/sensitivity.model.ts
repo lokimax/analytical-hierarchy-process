@@ -32,6 +32,6 @@ export interface SensitivityResult {
   currentWeight: number;
   dataPoints: SensitivityPoint[];
   criticalPoints: CriticalPoint[];
-  stability: StabilityMetrics;
-  alternativeNames: string[];
+  stabilityMetrics: StabilityMetrics;
+  alternativeNames: { [key: number]: string };
 }

@@ -2,6 +2,7 @@ package de.x132.ahp.controller;
 
 import de.x132.ahp.dto.AnalysisRequest;
 import de.x132.ahp.dto.AnalysisResponse;
+import de.x132.ahp.dto.SensitivityResult;
 import de.x132.ahp.exception.ResourceNotFoundException;
 import de.x132.ahp.exception.ValidationException;
 import de.x132.ahp.model.Analysis;
@@ -10,6 +11,7 @@ import de.x132.ahp.model.Project;
 import de.x132.ahp.service.AnalysisService;
 import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.ProjectService;
+import de.x132.ahp.service.SensitivityAnalysisService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,14 +28,17 @@ public class AnalysisController {
   private final AnalysisService analysisService;
   private final ProjectService projectService;
   private final AuthenticationService authenticationService;
+  private final SensitivityAnalysisService sensitivityAnalysisService;
 
   public AnalysisController(
       AnalysisService analysisService,
       ProjectService projectService,
-      AuthenticationService authenticationService) {
+      AuthenticationService authenticationService,
+      SensitivityAnalysisService sensitivityAnalysisService) {
     this.analysisService = analysisService;
     this.projectService = projectService;
     this.authenticationService = authenticationService;
+    this.sensitivityAnalysisService = sensitivityAnalysisService;
   }
 
   @PostMapping
@@ -122,6 +127,27 @@ public class AnalysisController {
 
     analysisService.deleteAnalysis(analysisId);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{analysisId}/sensitivity/{criterionId}")
+  public ResponseEntity<SensitivityResult> getSensitivityAnalysis(
+      @PathVariable String projectName,
+      @PathVariable Long analysisId,
+      @PathVariable Long criterionId,
+      Authentication authentication) {
+
+    Client client = authenticationService.getAuthenticatedClient(authentication);
+    projectService
+        .findByClientNicknameAndName(client.getNickname(), projectName)
+        .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
+
+    Analysis analysis =
+        analysisService
+            .findById(analysisId)
+            .orElseThrow(() -> new ResourceNotFoundException("Analysis", "id", analysisId));
+
+    SensitivityResult result = sensitivityAnalysisService.analyzeSensitivity(analysis, criterionId);
+    return ResponseEntity.ok(result);
   }
 
   private AnalysisResponse mapToResponse(Analysis analysis) {
