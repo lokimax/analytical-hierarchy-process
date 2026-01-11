@@ -21,7 +21,6 @@ import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
 
 /**
  * JPA Entity for pairwise comparison.

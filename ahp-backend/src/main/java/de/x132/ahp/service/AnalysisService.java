@@ -69,4 +69,14 @@ public class AnalysisService {
         .findById(analysisId)
         .filter(analysis -> analysis.getProject().getClient().equals(user));
   }
+
+  /**
+   * Get all analyses in a specific project.
+   *
+   * @param project the project to get analyses from
+   * @return a list of all analyses in the project
+   */
+  public List<Analysis> getAllByProject(Project project) {
+    return analysisRepository.findByProjectOrderByCreatedAtDesc(project);
+  }
 }

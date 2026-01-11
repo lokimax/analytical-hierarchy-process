@@ -5,6 +5,7 @@ import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Comparison;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.repository.ComparisonRepository;
 import de.x132.ahp.security.SecurityUtils;
 import de.x132.ahp.service.AnalysisService;
 import de.x132.ahp.service.AuditService;
@@ -25,18 +26,21 @@ public class AuditController {
   private final NodeService nodeService;
   private final AnalysisService analysisService;
   private final SecurityUtils securityUtils;
+  private final ComparisonRepository comparisonRepository;
 
   public AuditController(
       AuditService auditService,
       ProjectService projectService,
       NodeService nodeService,
       AnalysisService analysisService,
-      SecurityUtils securityUtils) {
+      SecurityUtils securityUtils,
+      ComparisonRepository comparisonRepository) {
     this.auditService = auditService;
     this.projectService = projectService;
     this.nodeService = nodeService;
     this.analysisService = analysisService;
     this.securityUtils = securityUtils;
+    this.comparisonRepository = comparisonRepository;
   }
 
   /** Get all revisions for a Project */
@@ -132,6 +136,17 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getComparisonRevisions(
       @PathVariable Long comparisonId) {
+    Client currentUser = securityUtils.getCurrentUser();
+    Comparison comparison = comparisonRepository.findById(comparisonId).orElse(null);
+
+    if (comparison == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    if (!projectService.isOwner(comparison.getPrioritisation().getProject().getId(), currentUser)) {
+      return ResponseEntity.status(403).build();
+    }
+
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Comparison.class, comparisonId);
     return ResponseEntity.ok(revisions);
@@ -142,6 +157,17 @@ public class AuditController {
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getComparisonHistory(
       @PathVariable Long comparisonId) {
+    Client currentUser = securityUtils.getCurrentUser();
+    Comparison comparison = comparisonRepository.findById(comparisonId).orElse(null);
+
+    if (comparison == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    if (!projectService.isOwner(comparison.getPrioritisation().getProject().getId(), currentUser)) {
+      return ResponseEntity.status(403).build();
+    }
+
     List<Map<String, Object>> history =
         auditService.getEntityHistory(Comparison.class, comparisonId);
     return ResponseEntity.ok(history);
@@ -163,9 +189,9 @@ public class AuditController {
     return ResponseEntity.ok(history);
   }
 
-  /** Get recent changes for all Projects */
+  /** Get recent changes for all Projects (requires ADMIN role to see all projects) */
   @GetMapping("/projects/recent")
-  @PreAuthorize("hasRole('USER')")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<List<Map<String, Object>>> getRecentProjectChanges(
       @RequestParam(defaultValue = "50") int limit) {
     limit = validateLimit(limit);
@@ -173,24 +199,42 @@ public class AuditController {
     return ResponseEntity.ok(changes);
   }
 
-  /** Get recent changes for all Nodes */
+  /** Get recent changes for user's own Nodes */
   @GetMapping("/nodes/recent")
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getRecentNodeChanges(
       @RequestParam(defaultValue = "50") int limit) {
+    Client currentUser = securityUtils.getCurrentUser();
     limit = validateLimit(limit);
-    List<Map<String, Object>> changes = auditService.getAllChanges(Node.class, limit);
-    return ResponseEntity.ok(changes);
+    // Get all nodes owned by current user's projects
+    List<Project> userProjects = projectService.getAllByOwner(currentUser);
+    List<Map<String, Object>> allChanges = new java.util.ArrayList<>();
+    for (Project project : userProjects) {
+      List<Node> nodes = nodeService.getAllByProject(project);
+      for (Node node : nodes) {
+        allChanges.addAll(auditService.getEntityRevisions(Node.class, node.getId()));
+      }
+    }
+    return ResponseEntity.ok(allChanges.stream().limit(limit).toList());
   }
 
-  /** Get recent changes for all Analyses */
+  /** Get recent changes for user's own Analyses */
   @GetMapping("/analyses/recent")
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<List<Map<String, Object>>> getRecentAnalysisChanges(
       @RequestParam(defaultValue = "50") int limit) {
+    Client currentUser = securityUtils.getCurrentUser();
     limit = validateLimit(limit);
-    List<Map<String, Object>> changes = auditService.getAllChanges(Analysis.class, limit);
-    return ResponseEntity.ok(changes);
+    // Get all analyses owned by current user's projects
+    List<Project> userProjects = projectService.getAllByOwner(currentUser);
+    List<Map<String, Object>> allChanges = new java.util.ArrayList<>();
+    for (Project project : userProjects) {
+      List<Analysis> analyses = analysisService.getAllByProject(project);
+      for (Analysis analysis : analyses) {
+        allChanges.addAll(auditService.getEntityRevisions(Analysis.class, analysis.getId()));
+      }
+    }
+    return ResponseEntity.ok(allChanges.stream().limit(limit).toList());
   }
 
   /** Get entity at a specific revision */
@@ -213,6 +257,12 @@ public class AuditController {
           case "project" -> projectService.isOwner(entityId, currentUser);
           case "node" -> nodeService.isOwner(entityId, currentUser);
           case "analysis" -> analysisService.isOwner(entityId, currentUser);
+          case "comparison" -> {
+            Comparison comparison = comparisonRepository.findById(entityId).orElse(null);
+            yield comparison != null
+                && projectService.isOwner(
+                    comparison.getPrioritisation().getProject().getId(), currentUser);
+          }
           case "client" -> entityId != null && entityId.equals(currentUser.getId());
           default -> false;
         };

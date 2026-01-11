@@ -80,4 +80,14 @@ public class ProjectService {
         .findById(projectId)
         .filter(project -> project.getClient().equals(user));
   }
+
+  /**
+   * Get all projects owned by a specific user.
+   *
+   * @param user the user whose projects to retrieve
+   * @return a list of all projects owned by the user
+   */
+  public List<Project> getAllByOwner(Client user) {
+    return projectRepository.findAllByClient(user);
+  }
 }

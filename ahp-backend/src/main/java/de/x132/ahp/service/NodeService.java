@@ -107,4 +107,14 @@ public class NodeService {
         .findById(nodeId)
         .filter(node -> node.getProject().getClient().equals(user));
   }
+
+  /**
+   * Get all nodes in a specific project.
+   *
+   * @param project the project to get nodes from
+   * @return a list of all nodes in the project
+   */
+  public List<Node> getAllByProject(Project project) {
+    return nodeRepository.findAllByProject(project);
+  }
 }
