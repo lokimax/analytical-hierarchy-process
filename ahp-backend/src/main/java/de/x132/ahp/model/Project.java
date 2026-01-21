@@ -75,6 +75,11 @@ public class Project {
   @NotAudited
   private List<Prioritisation> prioritisations = new ArrayList<>();
 
+  @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  @NotAudited
+  private List<Analysis> analyses = new ArrayList<>();
+
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
