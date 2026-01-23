@@ -25,3 +25,18 @@ node_modules/
 .env
 .env.local
 .env.*.local
+
+# Fly.io Deployment
+fly.toml
+deploy.sh
+ahp-backend/src/main/resources/application-prod.yml
+
+# Documentation artifacts (User request: only README and LICENSE)
+BUILD.md
+DEV_START.md
+FEATURES.md
+QUICKSTART.md
+SECURITY.md
+STATUS.md
+AUDIT_LOGGING.md
+PASSWORD_MANAGER_IMPLEMENTATION.md

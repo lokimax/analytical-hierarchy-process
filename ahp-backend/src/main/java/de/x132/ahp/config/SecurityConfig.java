@@ -21,6 +21,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   @Bean
+  public org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
+      webSecurityCustomizer() {
+    return (web) ->
+        web.ignoring()
+            .requestMatchers(
+                new AntPathRequestMatcher("/**/*.js"),
+                new AntPathRequestMatcher("/**/*.css"),
+                new AntPathRequestMatcher("/**/*.png"),
+                new AntPathRequestMatcher("/**/*.svg"),
+                new AntPathRequestMatcher("/**/*.ico"),
+                new AntPathRequestMatcher("/**/*.json"),
+                new AntPathRequestMatcher("/assets/**"),
+                new AntPathRequestMatcher("/index.html"),
+                new AntPathRequestMatcher("/"));
+  }
+
+  @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
@@ -56,11 +73,6 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
-                        new AntPathRequestMatcher("/"),
-                        new AntPathRequestMatcher("/index.html"),
-                        new AntPathRequestMatcher("/*.js"),
-                        new AntPathRequestMatcher("/*.css"),
-                        new AntPathRequestMatcher("/*.ico"),
                         new AntPathRequestMatcher("/assets/**"),
                         // Public API endpoints
                         new AntPathRequestMatcher("/api/public/**"),
