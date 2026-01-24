@@ -20,7 +20,7 @@ export interface AuthResponse {
 }
 
 export interface LoginRequest {
-  nickname: string;
+  identifier: string;
   password: string;
 }
 

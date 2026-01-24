@@ -63,6 +63,10 @@ public class ClientService {
     return clientRepository.findByEmail(email);
   }
 
+  public Optional<Client> getClientByIdentifier(String identifier) {
+    return clientRepository.findByNicknameIgnoreCaseOrEmailIgnoreCase(identifier, identifier);
+  }
+
   public boolean activateClient(String activationCode) {
     Optional<Client> clientOpt = clientRepository.findByActivationCode(activationCode);
     if (clientOpt.isEmpty()) {

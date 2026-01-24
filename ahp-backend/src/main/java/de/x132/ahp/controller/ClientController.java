@@ -75,11 +75,12 @@ public class ClientController {
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
     try {
-      String tokenValue = authenticationService.login(request.getNickname(), request.getPassword());
+      String tokenValue =
+          authenticationService.login(request.getIdentifier(), request.getPassword());
 
       Client client =
           clientService
-              .findByNickname(request.getNickname())
+              .getClientByIdentifier(request.getIdentifier())
               .orElseThrow(() -> new RuntimeException("Client not found"));
 
       AuthResponse response =

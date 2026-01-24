@@ -39,8 +39,9 @@ public class AuthenticationService {
    * @throws RuntimeException if authentication fails
    */
   @Transactional
-  public String login(String nickname, String password) {
-    Optional<Client> clientOptional = clientRepository.findByNickname(nickname);
+  public String login(String identifier, String password) {
+    Optional<Client> clientOptional =
+        clientRepository.findByNicknameIgnoreCaseOrEmailIgnoreCase(identifier, identifier);
 
     if (clientOptional.isEmpty()) {
       throw new RuntimeException("Invalid credentials");

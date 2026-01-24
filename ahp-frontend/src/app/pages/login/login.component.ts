@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
   form = {
-    nickname: '',
+    identifier: '',
     password: ''
   };
 
@@ -21,14 +21,14 @@ export class LoginComponent {
   error = signal('');
   showPassword = signal(false);
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) { }
 
   togglePasswordVisibility(): void {
     this.showPassword.set(!this.showPassword());
   }
 
   login(): void {
-    if (!this.form.nickname || !this.form.password) {
+    if (!this.form.identifier || !this.form.password) {
       this.error.set('Please fill in all fields');
       return;
     }

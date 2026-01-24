@@ -119,7 +119,24 @@ public class ClientControllerTest {
   @Test
   public void testLoginWithValidCredentials() throws Exception {
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setNickname("testuser");
+    loginRequest.setIdentifier("testuser");
+    loginRequest.setPassword(testPassword);
+
+    mockMvc
+        .perform(
+            post("/api/clients/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").exists())
+        .andExpect(jsonPath("$.token", hasLength(32)))
+        .andExpect(jsonPath("$.nickname").value("testuser"));
+  }
+
+  @Test
+  public void testLoginWithEmail() throws Exception {
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.setIdentifier("test@example.com");
     loginRequest.setPassword(testPassword);
 
     mockMvc
@@ -136,7 +153,7 @@ public class ClientControllerTest {
   @Test
   public void testLoginWithInvalidPassword() throws Exception {
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setNickname("testuser");
+    loginRequest.setIdentifier("testuser");
     loginRequest.setPassword("wrongpassword");
 
     mockMvc
@@ -150,7 +167,7 @@ public class ClientControllerTest {
   @Test
   public void testLoginWithNonexistentUser() throws Exception {
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setNickname("nonexistent");
+    loginRequest.setIdentifier("nonexistent");
     loginRequest.setPassword("password");
 
     mockMvc
@@ -232,7 +249,7 @@ public class ClientControllerTest {
 
     // 3. Login
     LoginRequest loginRequest = new LoginRequest();
-    loginRequest.setNickname("lifecycleuser");
+    loginRequest.setIdentifier("lifecycleuser");
     loginRequest.setPassword("lifecyclepass");
 
     String response =
@@ -270,5 +287,46 @@ public class ClientControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  public void testLoginCaseInsensitive() throws Exception {
+    // 1. Create the user "Max@x132.de" / "XntrAdm" (Mixed Case)
+    Client max =
+        Client.builder()
+            .nickname("XntrAdm")
+            .name("Max")
+            .surename("Mustermann")
+            .email("Max@x132.de")
+            .password(passwordEncoder.encode("password123"))
+            .status(UserStatus.ACTIVE)
+            .build();
+    clientRepository.save(max);
+
+    // 2. Try to login with lowercase email
+    LoginRequest loginRequestEmail = new LoginRequest();
+    loginRequestEmail.setIdentifier("max@x132.de");
+    loginRequestEmail.setPassword("password123");
+
+    mockMvc
+        .perform(
+            post("/api/clients/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequestEmail)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").exists());
+
+    // 3. Try to login with lowercase nickname
+    LoginRequest loginRequestNick = new LoginRequest();
+    loginRequestNick.setIdentifier("xntradm");
+    loginRequestNick.setPassword("password123");
+
+    mockMvc
+        .perform(
+            post("/api/clients/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequestNick)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").exists());
   }
 }

@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
 
-  @NotBlank(message = "Nickname is required")
-  private String nickname;
+  @NotBlank(message = "Identifier is required")
+  private String identifier;
 
   @NotBlank(message = "Password is required")
   private String password;
