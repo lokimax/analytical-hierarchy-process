@@ -2,6 +2,7 @@ package de.x132.ahp.controller;
 
 import de.x132.ahp.dto.ConnectionRequest;
 import de.x132.ahp.dto.ConnectionResponse;
+import de.x132.ahp.mapper.ConnectionMapper;
 import de.x132.ahp.model.Connection;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
@@ -19,17 +20,21 @@ public class ConnectionController {
 
   private final NodeService nodeService;
   private final ProjectService projectService;
+  private final ConnectionMapper connectionMapper;
 
-  public ConnectionController(NodeService nodeService, ProjectService projectService) {
+  public ConnectionController(
+      NodeService nodeService, ProjectService projectService, ConnectionMapper connectionMapper) {
     this.nodeService = nodeService;
     this.projectService = projectService;
+    this.connectionMapper = connectionMapper;
   }
 
   @PostMapping
   public ResponseEntity<ConnectionResponse> createConnection(
       @PathVariable String projectName, @Valid @RequestBody ConnectionRequest request) {
 
-    // Find the project (assuming we can identify it by name alone for this endpoint)
+    // Find the project (assuming we can identify it by name alone for this
+    // endpoint)
     Project project =
         projectService.findAll().stream()
             .filter(p -> p.getName().equals(projectName))
@@ -47,11 +52,13 @@ public class ConnectionController {
             .findByProjectAndName(project, request.getTargetNodeName())
             .orElseThrow(() -> new RuntimeException("Target node not found"));
 
-    Connection connection =
-        Connection.builder().sourceNode(sourceNode).targetNode(targetNode).project(project).build();
+    Connection connection = connectionMapper.toEntity(request);
+    connection.setSourceNode(sourceNode);
+    connection.setTargetNode(targetNode);
+    connection.setProject(project);
 
     Connection savedConnection = nodeService.createConnection(connection);
-    return ResponseEntity.ok(mapToResponse(savedConnection));
+    return ResponseEntity.ok(connectionMapper.toResponse(savedConnection));
   }
 
   @GetMapping
@@ -65,7 +72,7 @@ public class ConnectionController {
 
     List<ConnectionResponse> connections =
         nodeService.findConnectionsByProject(project).stream()
-            .map(this::mapToResponse)
+            .map(connectionMapper::toResponse)
             .collect(Collectors.toList());
 
     return ResponseEntity.ok(connections);
@@ -77,14 +84,5 @@ public class ConnectionController {
 
     nodeService.deleteConnection(connectionId);
     return ResponseEntity.noContent().build();
-  }
-
-  private ConnectionResponse mapToResponse(Connection connection) {
-    return ConnectionResponse.builder()
-        .id(connection.getId())
-        .sourceNodeName(connection.getSourceNode().getName())
-        .targetNodeName(connection.getTargetNode().getName())
-        .projectId(connection.getProject().getId())
-        .build();
   }
 }

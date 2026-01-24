@@ -5,6 +5,7 @@ import de.x132.ahp.dto.AnalysisResponse;
 import de.x132.ahp.dto.SensitivityResult;
 import de.x132.ahp.exception.ResourceNotFoundException;
 import de.x132.ahp.exception.ValidationException;
+import de.x132.ahp.mapper.AnalysisMapper;
 import de.x132.ahp.model.Analysis;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
@@ -29,16 +30,19 @@ public class AnalysisController {
   private final ProjectService projectService;
   private final AuthenticationService authenticationService;
   private final SensitivityAnalysisService sensitivityAnalysisService;
+  private final AnalysisMapper analysisMapper;
 
   public AnalysisController(
       AnalysisService analysisService,
       ProjectService projectService,
       AuthenticationService authenticationService,
-      SensitivityAnalysisService sensitivityAnalysisService) {
+      SensitivityAnalysisService sensitivityAnalysisService,
+      AnalysisMapper analysisMapper) {
     this.analysisService = analysisService;
     this.projectService = projectService;
     this.authenticationService = authenticationService;
     this.sensitivityAnalysisService = sensitivityAnalysisService;
+    this.analysisMapper = analysisMapper;
   }
 
   @PostMapping
@@ -58,19 +62,12 @@ public class AnalysisController {
           "Analysis with name '" + request.getName() + "' already exists in this project");
     }
 
-    Analysis analysis =
-        Analysis.builder()
-            .name(request.getName())
-            .beschreibung(request.getBeschreibung())
-            .project(project)
-            .criteriaComparisons(request.getCriteriaComparisons())
-            .alternativeComparisons(request.getAlternativeComparisons())
-            .results(request.getResults())
-            .completedAt(LocalDateTime.now())
-            .build();
+    Analysis analysis = analysisMapper.toEntity(request);
+    analysis.setProject(project);
+    analysis.setCompletedAt(LocalDateTime.now());
 
     Analysis savedAnalysis = analysisService.createAnalysis(analysis);
-    return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(savedAnalysis));
+    return ResponseEntity.status(HttpStatus.CREATED).body(analysisMapper.toResponse(savedAnalysis));
   }
 
   @GetMapping
@@ -85,7 +82,7 @@ public class AnalysisController {
 
     List<AnalysisResponse> analyses =
         analysisService.findAllByProject(project).stream()
-            .map(this::mapToResponse)
+            .map(analysisMapper::toResponse)
             .collect(Collectors.toList());
 
     return ResponseEntity.ok(analyses);
@@ -106,7 +103,7 @@ public class AnalysisController {
         analysisService
             .findById(analysisId)
             .orElseThrow(() -> new ResourceNotFoundException("Analysis", "id", analysisId));
-    return ResponseEntity.ok(mapToResponse(analysis));
+    return ResponseEntity.ok(analysisMapper.toResponse(analysis));
   }
 
   @DeleteMapping("/{analysisId}")
@@ -148,19 +145,5 @@ public class AnalysisController {
 
     SensitivityResult result = sensitivityAnalysisService.analyzeSensitivity(analysis, criterionId);
     return ResponseEntity.ok(result);
-  }
-
-  private AnalysisResponse mapToResponse(Analysis analysis) {
-    return AnalysisResponse.builder()
-        .id(analysis.getId())
-        .name(analysis.getName())
-        .beschreibung(analysis.getBeschreibung())
-        .criteriaComparisons(analysis.getCriteriaComparisons())
-        .alternativeComparisons(analysis.getAlternativeComparisons())
-        .results(analysis.getResults())
-        .completedAt(analysis.getCompletedAt())
-        .createdAt(analysis.getCreatedAt())
-        .updatedAt(analysis.getUpdatedAt())
-        .build();
   }
 }

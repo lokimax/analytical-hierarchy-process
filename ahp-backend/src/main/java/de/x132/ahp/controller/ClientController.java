@@ -6,6 +6,7 @@ import de.x132.ahp.dto.ClientResponse;
 import de.x132.ahp.dto.LoginRequest;
 import de.x132.ahp.dto.PasswordResetConfirmRequest;
 import de.x132.ahp.dto.PasswordResetRequest;
+import de.x132.ahp.mapper.ClientMapper;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Token;
 import de.x132.ahp.service.AuthenticationService;
@@ -32,14 +33,17 @@ public class ClientController {
   private final ClientService clientService;
   private final AuthenticationService authenticationService;
   private final EmailService emailService;
+  private final ClientMapper clientMapper;
 
   public ClientController(
       ClientService clientService,
       AuthenticationService authenticationService,
-      EmailService emailService) {
+      EmailService emailService,
+      ClientMapper clientMapper) {
     this.clientService = clientService;
     this.authenticationService = authenticationService;
     this.emailService = emailService;
+    this.clientMapper = clientMapper;
   }
 
   @PostMapping("/register")
@@ -53,15 +57,7 @@ public class ClientController {
       return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
-    Client client =
-        Client.builder()
-            .nickname(request.getNickname())
-            .name(request.getName())
-            .surename(request.getSurename())
-            .email(request.getEmail())
-            .password(request.getPassword())
-            .build();
-
+    Client client = clientMapper.toEntity(request);
     Client savedClient = clientService.registerClient(client);
 
     // Generate activation token and send email
@@ -69,7 +65,7 @@ public class ClientController {
     emailService.sendActivationEmail(
         savedClient.getEmail(), savedClient.getNickname(), activationToken.getToken());
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(savedClient));
+    return ResponseEntity.status(HttpStatus.CREATED).body(clientMapper.toResponse(savedClient));
   }
 
   @PostMapping("/login")
@@ -83,15 +79,7 @@ public class ClientController {
               .getClientByIdentifier(request.getIdentifier())
               .orElseThrow(() -> new RuntimeException("Client not found"));
 
-      AuthResponse response =
-          AuthResponse.builder()
-              .token(tokenValue)
-              .nickname(client.getNickname())
-              .name(client.getName())
-              .surename(client.getSurename())
-              .email(client.getEmail())
-              .build();
-
+      AuthResponse response = clientMapper.toAuthResponse(client, tokenValue);
       return ResponseEntity.ok(response);
     } catch (RuntimeException e) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -153,18 +141,7 @@ public class ClientController {
 
     return clientService
         .findByNickname(nickname)
-        .map(client -> ResponseEntity.ok(mapToResponse(client)))
+        .map(client -> ResponseEntity.ok(clientMapper.toResponse(client)))
         .orElse(ResponseEntity.notFound().build());
-  }
-
-  private ClientResponse mapToResponse(Client client) {
-    return ClientResponse.builder()
-        .id(client.getId())
-        .nickname(client.getNickname())
-        .name(client.getName())
-        .surename(client.getSurename())
-        .email(client.getEmail())
-        .status(client.getStatus())
-        .build();
   }
 }
