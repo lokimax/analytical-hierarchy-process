@@ -2,6 +2,7 @@ package de.x132.ahp.service;
 
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Token;
+import de.x132.ahp.model.TokenType;
 import de.x132.ahp.model.UserStatus;
 import de.x132.ahp.repository.ClientRepository;
 import de.x132.ahp.repository.TokenRepository;
@@ -15,6 +16,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service for handling client operations including registration, activation, and password reset.
+ *
+ * @author Max Wick
+ */
 @Service
 @Transactional
 public class ClientService {
@@ -99,6 +105,7 @@ public class ClientService {
             .token(UUID.randomUUID().toString())
             .client(client)
             .expiresAt(expiresAt)
+            .type(TokenType.AUTHENTICATION)
             .build();
     return tokenRepository.save(token);
   }
@@ -144,7 +151,13 @@ public class ClientService {
   public Token createActivationToken(Client client) {
     String tokenValue = tokenGenerator.generateToken();
     LocalDateTime expiresAt = LocalDateTime.now().plusHours(tokenExpiryHours);
-    Token token = Token.builder().token(tokenValue).client(client).expiresAt(expiresAt).build();
+    Token token =
+        Token.builder()
+            .token(tokenValue)
+            .client(client)
+            .expiresAt(expiresAt)
+            .type(TokenType.ACTIVATION)
+            .build();
     return tokenRepository.save(token);
   }
 
@@ -178,5 +191,56 @@ public class ClientService {
     tokenRepository.delete(token);
 
     return "success";
+  }
+
+  /**
+   * Creates a password reset token for a client.
+   *
+   * @param email the email of the client
+   * @return the generated token, or empty if client not found
+   */
+  public Optional<Token> createPasswordResetToken(String email) {
+    Optional<Client> clientOpt = clientRepository.findByEmail(email);
+    if (clientOpt.isEmpty()) {
+      return Optional.empty();
+    }
+
+    String tokenValue = tokenGenerator.generateToken();
+    LocalDateTime expiresAt = LocalDateTime.now().plusHours(tokenExpiryHours);
+    Token token =
+        Token.builder()
+            .token(tokenValue)
+            .client(clientOpt.get())
+            .expiresAt(expiresAt)
+            .type(TokenType.PASSWORD_RESET)
+            .build();
+    return Optional.of(tokenRepository.save(token));
+  }
+
+  /**
+   * Resets the client's password using a reset token.
+   *
+   * @param tokenValue the reset token
+   * @param newPassword the new password
+   * @return true if successful, false if token invalid/expired
+   */
+  public boolean resetPassword(String tokenValue, String newPassword) {
+    Optional<Token> tokenOpt = tokenRepository.findByToken(tokenValue);
+    if (tokenOpt.isEmpty()) {
+      return false;
+    }
+
+    Token token = tokenOpt.get();
+    if (token.getExpiresAt().isBefore(LocalDateTime.now())
+        || token.getType() != TokenType.PASSWORD_RESET) {
+      return false;
+    }
+
+    Client client = token.getClient();
+    client.setPassword(passwordEncoder.encode(newPassword));
+    clientRepository.save(client);
+    tokenRepository.delete(token);
+
+    return true;
   }
 }

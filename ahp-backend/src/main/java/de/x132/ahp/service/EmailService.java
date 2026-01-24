@@ -47,4 +47,30 @@ public class EmailService {
 
     mailSender.send(message);
   }
+
+  /**
+   * Sends a password reset email to the user.
+   *
+   * @param email the user's email address
+   * @param nickname the user's nickname
+   * @param token the password reset token
+   */
+  public void sendPasswordResetEmail(String email, String nickname, String token) {
+    SimpleMailMessage message = new SimpleMailMessage();
+    message.setFrom(from);
+    message.setTo(email);
+    message.setSubject("Password Reset Request");
+    message.setText(
+        String.format(
+            "Hello %s,\n\n"
+                + "You have requested to reset your password. Please click the link below to set a new password:\n\n"
+                + "%s/#/reset-password?token=%s\n\n"
+                + "This link will expire in 24 hours.\n\n"
+                + "If you did not request a password reset, please ignore this email.\n\n"
+                + "Best regards,\n"
+                + "AHP Team",
+            nickname, frontendUrl, token));
+
+    mailSender.send(message);
+  }
 }

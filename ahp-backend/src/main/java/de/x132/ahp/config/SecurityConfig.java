@@ -82,6 +82,8 @@ public class SecurityConfig {
                         new AntPathRequestMatcher("/api/clients/register"),
                         new AntPathRequestMatcher("/api/clients/activate"),
                         new AntPathRequestMatcher("/api/clients/login"),
+                        new AntPathRequestMatcher("/api/clients/request-password-reset"),
+                        new AntPathRequestMatcher("/api/clients/reset-password"),
                         // H2 console
                         new AntPathRequestMatcher("/h2-console/**"))
                     .permitAll()

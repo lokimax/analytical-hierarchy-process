@@ -4,40 +4,26 @@
       <div class="card shadow">
         <div class="card-body p-5">
           <h2 class="card-title text-center mb-4">Login</h2>
-          
+
           <form (ngSubmit)="login()">
             <div class="mb-3">
               <label for="nickname" class="form-label">Nickname</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="nickname"
-                [(ngModel)]="form.nickname"
-                name="nickname"
-                required
-              >
+              <input type="text" class="form-control" id="nickname" [(ngModel)]="form.nickname" name="nickname"
+                required>
             </div>
 
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
               <div class="input-group">
-                <input 
-                  [type]="showPassword() ? 'text' : 'password'"
-                  class="form-control" 
-                  id="password"
-                  [(ngModel)]="form.password"
-                  name="password"
-                  autocomplete="current-password"
-                  required
-                >
-                <button 
-                  type="button" 
-                  class="btn btn-outline-secondary" 
-                  (click)="togglePasswordVisibility()"
-                  tabindex="-1"
-                >
+                <input [type]="showPassword() ? 'text' : 'password'" class="form-control" id="password"
+                  [(ngModel)]="form.password" name="password" autocomplete="current-password" required>
+                <button type="button" class="btn btn-outline-secondary" (click)="togglePasswordVisibility()"
+                  tabindex="-1">
                   <i [ngClass]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
                 </button>
+              </div>
+              <div class="mb-3 text-end">
+                <a routerLink="/request-password-reset" class="text-decoration-none small">Forgot Password?</a>
               </div>
             </div>
 
@@ -55,9 +41,9 @@
           </form>
 
           <hr>
-          
+
           <p class="text-center mb-0">
-            Don't have an account? 
+            Don't have an account?
             <a routerLink="/register" class="btn btn-link p-0">Register here</a>
           </p>
         </div>
