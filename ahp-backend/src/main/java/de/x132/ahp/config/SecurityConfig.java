@@ -52,7 +52,10 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(
-        Arrays.asList("http://localhost:4200", "http://localhost:3000"));
+        Arrays.asList(
+            "http://localhost:4200",
+            "http://localhost:3000",
+            "https://ahp-backend-lokimax.fly.dev"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(Arrays.asList("*"));
     configuration.setAllowCredentials(true);
