@@ -117,6 +117,14 @@ export class AuthService {
     );
   }
 
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/request-password-reset`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, { token, newPassword });
+  }
+
   private loadUserFromStorage(): void {
     const userJson = localStorage.getItem('currentUser');
     if (userJson) {

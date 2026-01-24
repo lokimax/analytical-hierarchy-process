@@ -4,6 +4,8 @@ import de.x132.ahp.dto.AuthResponse;
 import de.x132.ahp.dto.ClientRegistrationRequest;
 import de.x132.ahp.dto.ClientResponse;
 import de.x132.ahp.dto.LoginRequest;
+import de.x132.ahp.dto.PasswordResetConfirmRequest;
+import de.x132.ahp.dto.PasswordResetRequest;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Token;
 import de.x132.ahp.service.AuthenticationService;
@@ -112,6 +114,31 @@ public class ClientController {
     }
     return ResponseEntity.badRequest()
         .body(Map.of("message", "Invalid or expired activation token"));
+  }
+
+  @PostMapping("/request-password-reset")
+  public ResponseEntity<?> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+    clientService
+        .createPasswordResetToken(request.getEmail())
+        .ifPresent(
+            token ->
+                emailService.sendPasswordResetEmail(
+                    token.getClient().getEmail(),
+                    token.getClient().getNickname(),
+                    token.getToken()));
+
+    // Always return ok to prevent user enumeration
+    return ResponseEntity.ok(
+        Map.of("message", "If an account exists, a password reset email has been sent."));
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetConfirmRequest request) {
+    boolean success = clientService.resetPassword(request.getToken(), request.getNewPassword());
+    if (success) {
+      return ResponseEntity.ok(Map.of("message", "Password has been reset successfully."));
+    }
+    return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired token."));
   }
 
   @GetMapping("/{nickname}")

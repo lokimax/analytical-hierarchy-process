@@ -17,16 +17,24 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/activation/activation.component').then(m => m.ActivationComponent)
   },
   {
+    path: 'request-password-reset',
+    loadComponent: () => import('./pages/request-password-reset/request-password-reset.component').then(m => m.RequestPasswordResetComponent)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
+  {
     path: '',
     loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent),
     canActivate: [() => {
       const authService = inject(AuthService);
       const router = inject(Router);
-      
+
       if (authService.isAuthenticated()) {
         return true;
       }
-      
+
       router.navigate(['/login']);
       return false;
     }]
@@ -37,11 +45,11 @@ export const routes: Routes = [
     canActivate: [() => {
       const authService = inject(AuthService);
       const router = inject(Router);
-      
+
       if (authService.isAuthenticated()) {
         return true;
       }
-      
+
       router.navigate(['/login']);
       return false;
     }]
@@ -52,11 +60,11 @@ export const routes: Routes = [
     canActivate: [() => {
       const authService = inject(AuthService);
       const router = inject(Router);
-      
+
       if (authService.isAuthenticated()) {
         return true;
       }
-      
+
       router.navigate(['/login']);
       return false;
     }]
@@ -67,11 +75,11 @@ export const routes: Routes = [
     canActivate: [() => {
       const authService = inject(AuthService);
       const router = inject(Router);
-      
+
       if (authService.isAuthenticated()) {
         return true;
       }
-      
+
       router.navigate(['/login']);
       return false;
     }]
@@ -82,11 +90,11 @@ export const routes: Routes = [
     canActivate: [() => {
       const authService = inject(AuthService);
       const router = inject(Router);
-      
+
       if (authService.isAuthenticated()) {
         return true;
       }
-      
+
       router.navigate(['/login']);
       return false;
     }]
@@ -97,11 +105,11 @@ export const routes: Routes = [
     canActivate: [() => {
       const authService = inject(AuthService);
       const router = inject(Router);
-      
+
       if (authService.isAuthenticated()) {
         return true;
       }
-      
+
       router.navigate(['/login']);
       return false;
     }]

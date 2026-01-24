@@ -2,6 +2,8 @@ package de.x132.ahp.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,6 +43,10 @@ public class Token {
 
   @Column(name = "token", nullable = false, unique = true, length = 255)
   private String token;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type", nullable = false)
+  private TokenType type;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "client_id", nullable = false)

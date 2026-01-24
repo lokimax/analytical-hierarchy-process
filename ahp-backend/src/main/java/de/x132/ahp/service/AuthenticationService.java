@@ -2,6 +2,7 @@ package de.x132.ahp.service;
 
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Token;
+import de.x132.ahp.model.TokenType;
 import de.x132.ahp.model.UserStatus;
 import de.x132.ahp.repository.ClientRepository;
 import de.x132.ahp.repository.TokenRepository;
@@ -61,7 +62,9 @@ public class AuthenticationService {
 
     // Create or update token
     Token token =
-        tokenRepository.findByClient(client).orElse(Token.builder().client(client).build());
+        tokenRepository
+            .findByClient(client)
+            .orElse(Token.builder().client(client).type(TokenType.AUTHENTICATION).build());
 
     token.setToken(tokenValue);
     token.setExpiresAt(LocalDateTime.now().plusDays(30)); // Token valid for 30 days
