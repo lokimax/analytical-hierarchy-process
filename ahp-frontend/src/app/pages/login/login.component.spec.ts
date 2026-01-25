@@ -32,7 +32,7 @@ describe('LoginComponent', () => {
 
   it('should create the component', () => {
     expect(component).toBeTruthy();
-    expect(component.form.nickname).toBe('');
+    expect(component.form.identifier).toBe('');
     expect(component.form.password).toBe('');
     expect(component.isSubmitting()).toBeFalse();
     expect(component.error()).toBe('');
@@ -41,16 +41,16 @@ describe('LoginComponent', () => {
 
   it('should toggle password visibility', () => {
     expect(component.showPassword()).toBeFalse();
-    
+
     component.togglePasswordVisibility();
     expect(component.showPassword()).toBeTrue();
-    
+
     component.togglePasswordVisibility();
     expect(component.showPassword()).toBeFalse();
   });
 
   it('should show validation error when fields are empty', () => {
-    component.form.nickname = '';
+    component.form.identifier = '';
     component.form.password = '';
 
     component.login();
@@ -60,19 +60,19 @@ describe('LoginComponent', () => {
   });
 
   it('should call AuthService.login and navigate on success', () => {
-    component.form.nickname = 'user';
+    component.form.identifier = 'user';
     component.form.password = 'pass';
     authServiceSpy.login.and.returnValue(of({ token: 't', nickname: 'user', email: 'u@example.com' }));
 
     component.login();
 
-    expect(authServiceSpy.login).toHaveBeenCalledWith({ nickname: 'user', password: 'pass' });
+    expect(authServiceSpy.login).toHaveBeenCalledWith({ identifier: 'user', password: 'pass' });
     expect(component.isSubmitting()).toBeFalse();
     expect(router.navigate).toHaveBeenCalledWith(['/']);
   });
 
   it('should set isSubmitting true while request is in-flight', () => {
-    component.form.nickname = 'user';
+    component.form.identifier = 'user';
     component.form.password = 'pass';
 
     const subject = new Subject<any>();
@@ -92,11 +92,12 @@ describe('LoginComponent', () => {
   });
 
   it('should show error and stop submitting on failure', () => {
-    component.form.nickname = 'user';
+    component.form.identifier = 'user';
     component.form.password = 'pass';
 
     const subject = new Subject<any>();
     authServiceSpy.login.and.returnValue(subject.asObservable());
+    spyOn(console, 'error');
 
     component.login();
 
@@ -112,7 +113,7 @@ describe('LoginComponent', () => {
 
   it('should clear previous error on new submit', () => {
     component.error.set('Old error');
-    component.form.nickname = 'user';
+    component.form.identifier = 'user';
     component.form.password = 'pass';
 
     const subject = new Subject<any>();

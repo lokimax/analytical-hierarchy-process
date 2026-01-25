@@ -8,6 +8,7 @@ import de.x132.ahp.model.Analysis;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.model.UserStatus;
 import de.x132.ahp.repository.ClientRepository;
 import de.x132.ahp.service.AnalysisService;
 import de.x132.ahp.service.NodeService;
@@ -34,6 +35,7 @@ class AuditControllerOwnershipTest {
   @Autowired private AnalysisService analysisService;
   @Autowired private ClientRepository clientRepository;
   @Autowired private EntityManager entityManager;
+  @Autowired private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
   private Client ownerClient;
   private Client anotherClient;
@@ -49,8 +51,9 @@ class AuditControllerOwnershipTest {
             .nickname("owneruser")
             .name("Owner")
             .surename("User")
-            .password("hashedpassword")
+            .password(passwordEncoder.encode("password"))
             .email("owner@test.com")
+            .status(UserStatus.ACTIVE)
             .build();
     ownerClient = clientRepository.save(ownerClient);
 
@@ -59,8 +62,9 @@ class AuditControllerOwnershipTest {
             .nickname("anotheruser")
             .name("Another")
             .surename("User")
-            .password("hashedpassword")
+            .password(passwordEncoder.encode("password"))
             .email("another@test.com")
+            .status(UserStatus.ACTIVE)
             .build();
     anotherClient = clientRepository.save(anotherClient);
 

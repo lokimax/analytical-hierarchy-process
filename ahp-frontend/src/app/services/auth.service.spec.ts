@@ -53,7 +53,7 @@ describe('AuthService', () => {
 
       // Create new service instance to trigger initialization
       const newService = new AuthService(TestBed.inject(HttpClientTestingModule) as any, router);
-      
+
       expect(newService.getCurrentUser()()).toEqual(mockUser);
       expect(newService.isAuthenticated()).toBeTrue();
     });
@@ -144,7 +144,7 @@ describe('AuthService', () => {
   describe('Login', () => {
     it('should login successfully with token', (done) => {
       const loginRequest: LoginRequest = {
-        nickname: 'testuser',
+        identifier: 'testuser',
         password: 'password123'
       };
 
@@ -179,7 +179,7 @@ describe('AuthService', () => {
 
     it('should login successfully without token', (done) => {
       const loginRequest: LoginRequest = {
-        nickname: 'testuser',
+        identifier: 'testuser',
         password: 'password123'
       };
 
@@ -203,7 +203,7 @@ describe('AuthService', () => {
 
     it('should handle login error', (done) => {
       const loginRequest: LoginRequest = {
-        nickname: 'wronguser',
+        identifier: 'wronguser',
         password: 'wrongpass'
       };
 
@@ -222,7 +222,7 @@ describe('AuthService', () => {
 
     it('should emit authentication state changes', (done) => {
       const loginRequest: LoginRequest = {
-        nickname: 'testuser',
+        identifier: 'testuser',
         password: 'password123'
       };
 
@@ -286,7 +286,7 @@ describe('AuthService', () => {
 
     it('should logout without token', () => {
       localStorage.removeItem('token');
-      
+
       service.logout();
 
       httpMock.expectNone(`${apiUrl}/logout`);
@@ -298,33 +298,34 @@ describe('AuthService', () => {
   describe('Token Management', () => {
     it('should retrieve token from localStorage', () => {
       localStorage.setItem('token', 'test-token-12345');
-      
+
       const token = service.getAuthToken();
-      
+
       expect(token).toBe('test-token-12345');
     });
 
     it('should return null when no token exists', () => {
       const token = service.getAuthToken();
-      
+
       expect(token).toBeNull();
     });
   });
 
   describe('User State Management', () => {
     it('should handle corrupted localStorage data', () => {
+      spyOn(console, 'error');
       localStorage.setItem('currentUser', 'invalid-json{');
-      
+
       // Create new service instance to trigger initialization
       const newService = new AuthService(TestBed.inject(HttpClientTestingModule) as any, router);
-      
+
       expect(newService.isAuthenticated()).toBeFalse();
       expect(localStorage.getItem('currentUser')).toBeNull();
     });
 
     it('should return current user signal', () => {
       const userSignal = service.getCurrentUser();
-      
+
       expect(userSignal).toBeTruthy();
       expect(typeof userSignal).toBe('function'); // Signals are functions
     });

@@ -14,7 +14,7 @@ describe('RegisterComponent', () => {
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['register']);
 
-  jasmine.clock().install();
+    jasmine.clock().install();
 
     await TestBed.configureTestingModule({
       imports: [RegisterComponent],
@@ -46,10 +46,10 @@ describe('RegisterComponent', () => {
 
   it('should toggle password visibility', () => {
     expect(component.showPassword()).toBeFalse();
-    
+
     component.togglePasswordVisibility();
     expect(component.showPassword()).toBeTrue();
-    
+
     component.togglePasswordVisibility();
     expect(component.showPassword()).toBeFalse();
   });
@@ -83,7 +83,8 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass1234'
+      password: 'pass1234',
+      confirmPassword: 'pass1234'
     };
     authServiceSpy.register.and.returnValue(
       of({ nickname: 'user', email: 'john@example.com' })
@@ -95,8 +96,9 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass1234'
-    });
+      password: 'pass1234',
+      confirmPassword: 'pass1234'
+    } as any);
   });
 
   it('should show success message and navigate after successful registration', () => {
@@ -105,7 +107,8 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass1234'
+      password: 'pass1234',
+      confirmPassword: 'pass1234'
     };
     authServiceSpy.register.and.returnValue(
       of({ nickname: 'user', email: 'john@example.com' })
@@ -124,7 +127,8 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass1234'
+      password: 'pass1234',
+      confirmPassword: 'pass1234'
     };
 
     const subject = new Subject<any>();
@@ -144,11 +148,13 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'taken@example.com',
-      password: 'pass1234'
+      password: 'pass1234',
+      confirmPassword: 'pass1234'
     };
 
     const subject = new Subject<any>();
     authServiceSpy.register.and.returnValue(subject.asObservable());
+    spyOn(console, 'error');
 
     component.register();
     expect(component.isSubmitting()).toBeTrue();
@@ -167,11 +173,13 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass1234'
+      password: 'pass1234',
+      confirmPassword: 'pass1234'
     };
 
     const subject = new Subject<any>();
     authServiceSpy.register.and.returnValue(subject.asObservable());
+    spyOn(console, 'error');
 
     component.register();
     expect(component.isSubmitting()).toBeTrue();
@@ -191,7 +199,8 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'pass1234'
+      password: 'pass1234',
+      confirmPassword: 'pass1234'
     };
 
     const subject = new Subject<any>();
@@ -208,7 +217,8 @@ describe('RegisterComponent', () => {
       name: 'John',
       surename: 'Doe',
       email: 'john@example.com',
-      password: 'short'
+      password: 'short',
+      confirmPassword: 'short'
     };
 
     component.register();
@@ -218,6 +228,6 @@ describe('RegisterComponent', () => {
   });
 });
 
-  afterEach(() => {
-    jasmine.clock().uninstall();
-  });
+afterEach(() => {
+  jasmine.clock().uninstall();
+});
