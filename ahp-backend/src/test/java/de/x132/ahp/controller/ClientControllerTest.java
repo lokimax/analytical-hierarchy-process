@@ -49,6 +49,9 @@ public class ClientControllerTest {
 
   @Autowired private AuthenticationService authenticationService;
 
+  @org.springframework.boot.test.mock.mockito.MockBean
+  private de.x132.ahp.service.EmailService emailService;
+
   private Client testClient;
   private String testPassword = "password123";
 

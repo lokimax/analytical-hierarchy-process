@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import de.x132.ahp.model.Analysis;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.model.json.AnalysisResult;
 import de.x132.ahp.repository.AnalysisRepository;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -43,7 +44,7 @@ class AnalysisServiceTest {
             .project(testProject)
             .criteriaComparisons("{}")
             .alternativeComparisons("{}")
-            .results("{}")
+            .results(AnalysisResult.builder().build())
             .createdAt(LocalDateTime.now())
             .build();
   }

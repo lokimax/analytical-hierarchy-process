@@ -12,6 +12,7 @@ import de.x132.ahp.dto.AnalysisRequest;
 import de.x132.ahp.model.Analysis;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.model.json.AnalysisResult;
 import de.x132.ahp.service.AnalysisService;
 import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.ProjectService;
@@ -70,7 +71,7 @@ class AnalysisControllerTest {
             .project(testProject)
             .criteriaComparisons("{}")
             .alternativeComparisons("{}")
-            .results("{}")
+            .results(AnalysisResult.builder().build())
             .createdAt(LocalDateTime.now())
             .build();
 
