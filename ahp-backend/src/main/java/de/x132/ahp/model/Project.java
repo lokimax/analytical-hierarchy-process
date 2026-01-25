@@ -1,5 +1,6 @@
 package de.x132.ahp.model;
 
+import de.x132.ahp.security.Ownable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,7 +44,7 @@ import org.hibernate.envers.NotAudited;
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = {"client", "nodes", "connections", "prioritisations"})
 @Audited
-public class Project {
+public class Project implements Ownable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "project_seq")

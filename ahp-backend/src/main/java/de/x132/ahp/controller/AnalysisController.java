@@ -9,6 +9,8 @@ import de.x132.ahp.mapper.AnalysisMapper;
 import de.x132.ahp.model.Analysis;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.repository.AnalysisRepository;
+import de.x132.ahp.security.CheckOwnership;
 import de.x132.ahp.service.AnalysisService;
 import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.ProjectService;
@@ -89,15 +91,11 @@ public class AnalysisController {
   }
 
   @GetMapping("/{analysisId}")
+  @CheckOwnership(repository = AnalysisRepository.class, idParam = "analysisId")
   public ResponseEntity<AnalysisResponse> getAnalysis(
       @PathVariable String projectName,
       @PathVariable Long analysisId,
       Authentication authentication) {
-
-    Client client = authenticationService.getAuthenticatedClient(authentication);
-    projectService
-        .findByClientNicknameAndName(client.getNickname(), projectName)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
 
     Analysis analysis =
         analysisService
@@ -107,36 +105,23 @@ public class AnalysisController {
   }
 
   @DeleteMapping("/{analysisId}")
+  @CheckOwnership(repository = AnalysisRepository.class, idParam = "analysisId")
   public ResponseEntity<Void> deleteAnalysis(
       @PathVariable String projectName,
       @PathVariable Long analysisId,
       Authentication authentication) {
-
-    Client client = authenticationService.getAuthenticatedClient(authentication);
-    projectService
-        .findByClientNicknameAndName(client.getNickname(), projectName)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
-
-    // Verify analysis exists before deleting
-    analysisService
-        .findById(analysisId)
-        .orElseThrow(() -> new ResourceNotFoundException("Analysis", "id", analysisId));
 
     analysisService.deleteAnalysis(analysisId);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/{analysisId}/sensitivity/{criterionId}")
+  @CheckOwnership(repository = AnalysisRepository.class, idParam = "analysisId")
   public ResponseEntity<SensitivityResult> getSensitivityAnalysis(
       @PathVariable String projectName,
       @PathVariable Long analysisId,
       @PathVariable Long criterionId,
       Authentication authentication) {
-
-    Client client = authenticationService.getAuthenticatedClient(authentication);
-    projectService
-        .findByClientNicknameAndName(client.getNickname(), projectName)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", "name", projectName));
 
     Analysis analysis =
         analysisService

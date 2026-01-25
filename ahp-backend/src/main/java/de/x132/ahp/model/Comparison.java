@@ -1,5 +1,6 @@
 package de.x132.ahp.model;
 
+import de.x132.ahp.security.Ownable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,7 +37,7 @@ import org.hibernate.envers.Audited;
 @EqualsAndHashCode(of = "id")
 @Audited
 @ToString(exclude = {"prioritisation", "parent", "leftNode", "rightNode"})
-public class Comparison implements Comparable<Comparison> {
+public class Comparison implements Comparable<Comparison>, Ownable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "comparison_seq")
@@ -83,5 +84,10 @@ public class Comparison implements Comparable<Comparison> {
     }
 
     return this.rightNode.getName().compareTo(o.getRightNode().getName());
+  }
+
+  @Override
+  public Client getClient() {
+    return prioritisation.getProject().getClient();
   }
 }

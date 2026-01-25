@@ -6,13 +6,21 @@ import de.x132.ahp.mapper.ConnectionMapper;
 import de.x132.ahp.model.Connection;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.repository.ConnectionRepository;
+import de.x132.ahp.security.CheckOwnership;
 import de.x132.ahp.service.NodeService;
 import de.x132.ahp.service.ProjectService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/projects/{projectName}/connections")
@@ -79,6 +87,7 @@ public class ConnectionController {
   }
 
   @DeleteMapping("/{connectionId}")
+  @CheckOwnership(repository = ConnectionRepository.class, idParam = "connectionId")
   public ResponseEntity<Void> deleteConnection(
       @PathVariable String projectName, @PathVariable Long connectionId) {
 

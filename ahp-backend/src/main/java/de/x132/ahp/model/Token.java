@@ -1,5 +1,6 @@
 package de.x132.ahp.model;
 
+import de.x132.ahp.security.Ownable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,7 +35,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = "client")
-public class Token {
+public class Token implements Ownable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "token_seq")

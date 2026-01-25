@@ -6,6 +6,7 @@ import de.x132.ahp.model.Comparison;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
 import de.x132.ahp.repository.ComparisonRepository;
+import de.x132.ahp.security.CheckOwnership;
 import de.x132.ahp.security.SecurityUtils;
 import de.x132.ahp.service.AnalysisService;
 import de.x132.ahp.service.AuditService;
@@ -46,14 +47,11 @@ public class AuditController {
   /** Get all revisions for a Project */
   @GetMapping("/projects/{projectId}/revisions")
   @PreAuthorize("hasRole('USER')")
+  @CheckOwnership(
+      repository = de.x132.ahp.repository.ProjectRepository.class,
+      idParam = "projectId")
   public ResponseEntity<List<Map<String, Object>>> getProjectRevisions(
       @PathVariable Long projectId) {
-    Client currentUser = securityUtils.getCurrentUser();
-
-    if (!projectService.isOwner(projectId, currentUser)) {
-      return ResponseEntity.status(403).build();
-    }
-
     List<Map<String, Object>> revisions = auditService.getEntityRevisions(Project.class, projectId);
     return ResponseEntity.ok(revisions);
   }
@@ -61,13 +59,10 @@ public class AuditController {
   /** Get complete history with changes for a Project */
   @GetMapping("/projects/{projectId}/history")
   @PreAuthorize("hasRole('USER')")
+  @CheckOwnership(
+      repository = de.x132.ahp.repository.ProjectRepository.class,
+      idParam = "projectId")
   public ResponseEntity<List<Map<String, Object>>> getProjectHistory(@PathVariable Long projectId) {
-    Client currentUser = securityUtils.getCurrentUser();
-
-    if (!projectService.isOwner(projectId, currentUser)) {
-      return ResponseEntity.status(403).build();
-    }
-
     List<Map<String, Object>> history = auditService.getEntityHistory(Project.class, projectId);
     return ResponseEntity.ok(history);
   }
@@ -75,13 +70,8 @@ public class AuditController {
   /** Get all revisions for a Node */
   @GetMapping("/nodes/{nodeId}/revisions")
   @PreAuthorize("hasRole('USER')")
+  @CheckOwnership(repository = de.x132.ahp.repository.NodeRepository.class, idParam = "nodeId")
   public ResponseEntity<List<Map<String, Object>>> getNodeRevisions(@PathVariable Long nodeId) {
-    Client currentUser = securityUtils.getCurrentUser();
-
-    if (!nodeService.isOwner(nodeId, currentUser)) {
-      return ResponseEntity.status(403).build();
-    }
-
     List<Map<String, Object>> revisions = auditService.getEntityRevisions(Node.class, nodeId);
     return ResponseEntity.ok(revisions);
   }
@@ -89,13 +79,8 @@ public class AuditController {
   /** Get complete history for a Node */
   @GetMapping("/nodes/{nodeId}/history")
   @PreAuthorize("hasRole('USER')")
+  @CheckOwnership(repository = de.x132.ahp.repository.NodeRepository.class, idParam = "nodeId")
   public ResponseEntity<List<Map<String, Object>>> getNodeHistory(@PathVariable Long nodeId) {
-    Client currentUser = securityUtils.getCurrentUser();
-
-    if (!nodeService.isOwner(nodeId, currentUser)) {
-      return ResponseEntity.status(403).build();
-    }
-
     List<Map<String, Object>> history = auditService.getEntityHistory(Node.class, nodeId);
     return ResponseEntity.ok(history);
   }
@@ -103,14 +88,11 @@ public class AuditController {
   /** Get all revisions for an Analysis */
   @GetMapping("/analyses/{analysisId}/revisions")
   @PreAuthorize("hasRole('USER')")
+  @CheckOwnership(
+      repository = de.x132.ahp.repository.AnalysisRepository.class,
+      idParam = "analysisId")
   public ResponseEntity<List<Map<String, Object>>> getAnalysisRevisions(
       @PathVariable Long analysisId) {
-    Client currentUser = securityUtils.getCurrentUser();
-
-    if (!analysisService.isOwner(analysisId, currentUser)) {
-      return ResponseEntity.status(403).build();
-    }
-
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Analysis.class, analysisId);
     return ResponseEntity.ok(revisions);
@@ -119,14 +101,11 @@ public class AuditController {
   /** Get complete history for an Analysis */
   @GetMapping("/analyses/{analysisId}/history")
   @PreAuthorize("hasRole('USER')")
+  @CheckOwnership(
+      repository = de.x132.ahp.repository.AnalysisRepository.class,
+      idParam = "analysisId")
   public ResponseEntity<List<Map<String, Object>>> getAnalysisHistory(
       @PathVariable Long analysisId) {
-    Client currentUser = securityUtils.getCurrentUser();
-
-    if (!analysisService.isOwner(analysisId, currentUser)) {
-      return ResponseEntity.status(403).build();
-    }
-
     List<Map<String, Object>> history = auditService.getEntityHistory(Analysis.class, analysisId);
     return ResponseEntity.ok(history);
   }
@@ -134,19 +113,9 @@ public class AuditController {
   /** Get all revisions for a Comparison */
   @GetMapping("/comparisons/{comparisonId}/revisions")
   @PreAuthorize("hasRole('USER')")
+  @CheckOwnership(repository = ComparisonRepository.class, idParam = "comparisonId")
   public ResponseEntity<List<Map<String, Object>>> getComparisonRevisions(
       @PathVariable Long comparisonId) {
-    Client currentUser = securityUtils.getCurrentUser();
-    Comparison comparison = comparisonRepository.findById(comparisonId).orElse(null);
-
-    if (comparison == null) {
-      return ResponseEntity.notFound().build();
-    }
-
-    if (!projectService.isOwner(comparison.getPrioritisation().getProject().getId(), currentUser)) {
-      return ResponseEntity.status(403).build();
-    }
-
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Comparison.class, comparisonId);
     return ResponseEntity.ok(revisions);
@@ -155,19 +124,9 @@ public class AuditController {
   /** Get complete history for a Comparison */
   @GetMapping("/comparisons/{comparisonId}/history")
   @PreAuthorize("hasRole('USER')")
+  @CheckOwnership(repository = ComparisonRepository.class, idParam = "comparisonId")
   public ResponseEntity<List<Map<String, Object>>> getComparisonHistory(
       @PathVariable Long comparisonId) {
-    Client currentUser = securityUtils.getCurrentUser();
-    Comparison comparison = comparisonRepository.findById(comparisonId).orElse(null);
-
-    if (comparison == null) {
-      return ResponseEntity.notFound().build();
-    }
-
-    if (!projectService.isOwner(comparison.getPrioritisation().getProject().getId(), currentUser)) {
-      return ResponseEntity.status(403).build();
-    }
-
     List<Map<String, Object>> history =
         auditService.getEntityHistory(Comparison.class, comparisonId);
     return ResponseEntity.ok(history);

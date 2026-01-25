@@ -5,6 +5,7 @@ import de.x132.ahp.dto.NodeResponse;
 import de.x132.ahp.mapper.NodeMapper;
 import de.x132.ahp.model.Node;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.security.CheckOwnership;
 import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.NodeService;
 import de.x132.ahp.service.ProjectService;
@@ -87,18 +88,12 @@ public class NodeController {
         .orElse(ResponseEntity.notFound().build());
   }
 
-  @DeleteMapping("/{nodeName}")
+  @DeleteMapping("/{nodeId}")
+  @CheckOwnership(repository = de.x132.ahp.repository.NodeRepository.class, idParam = "nodeId")
   public ResponseEntity<Void> deleteNode(
-      Authentication authentication,
-      @PathVariable String projectName,
-      @PathVariable String nodeName) {
-    String nickname = authentication.getName();
-    Node node =
-        nodeService
-            .findByProjectClientNicknameAndProjectNameAndName(nickname, projectName, nodeName)
-            .orElseThrow(() -> new RuntimeException("Node not found"));
+      Authentication authentication, @PathVariable String projectName, @PathVariable Long nodeId) {
 
-    nodeService.deleteNode(node.getId());
+    nodeService.deleteNode(nodeId);
     return ResponseEntity.noContent().build();
   }
 }

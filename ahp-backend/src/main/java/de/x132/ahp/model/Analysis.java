@@ -1,5 +1,6 @@
 package de.x132.ahp.model;
 
+import de.x132.ahp.security.Ownable;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
@@ -7,14 +8,23 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 
+/**
+ * JPA Entity for Analysis results.
+ *
+ * @author Max Wick
+ */
 @Entity
-@Table(name = "analysis")
+@Table(
+    name = "analysis",
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "name"})})
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"project"})
 @Audited
-public class Analysis {
+public class Analysis implements Ownable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "analysis_seq")
@@ -49,4 +59,9 @@ public class Analysis {
   @UpdateTimestamp
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
+
+  @Override
+  public Client getClient() {
+    return project.getClient();
+  }
 }

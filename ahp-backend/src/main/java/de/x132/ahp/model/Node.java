@@ -1,5 +1,6 @@
 package de.x132.ahp.model;
 
+import de.x132.ahp.security.Ownable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,7 +44,7 @@ import org.hibernate.envers.NotAudited;
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = {"project", "outgoing", "ingoing"})
 @Audited
-public class Node {
+public class Node implements Ownable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "node_seq")
@@ -80,4 +81,9 @@ public class Node {
   @UpdateTimestamp
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
+
+  @Override
+  public Client getClient() {
+    return project.getClient();
+  }
 }

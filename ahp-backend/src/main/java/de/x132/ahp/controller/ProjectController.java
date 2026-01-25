@@ -3,11 +3,12 @@ package de.x132.ahp.controller;
 import de.x132.ahp.dto.ProjectRequest;
 import de.x132.ahp.dto.ProjectResponse;
 import de.x132.ahp.exception.ResourceNotFoundException;
-import de.x132.ahp.exception.UnauthorizedException;
 import de.x132.ahp.exception.ValidationException;
 import de.x132.ahp.mapper.ProjectMapper;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.repository.ProjectRepository;
+import de.x132.ahp.security.CheckOwnership;
 import de.x132.ahp.service.ClientService;
 import de.x132.ahp.service.ProjectService;
 import jakarta.validation.Valid;
@@ -90,6 +91,7 @@ public class ProjectController {
   }
 
   @PutMapping("/{projectId}")
+  @CheckOwnership(repository = ProjectRepository.class, idParam = "projectId")
   public ResponseEntity<ProjectResponse> updateProject(
       Authentication authentication,
       @PathVariable Long projectId,
@@ -100,11 +102,6 @@ public class ProjectController {
             .findById(projectId)
             .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
 
-    // Verify ownership
-    if (!project.getClient().getNickname().equals(authentication.getName())) {
-      throw new UnauthorizedException("You do not have permission to update this project");
-    }
-
     project.setBeschreibung(request.getBeschreibung());
 
     Project updatedProject = projectService.updateProject(project);
@@ -112,6 +109,7 @@ public class ProjectController {
   }
 
   @DeleteMapping("/{projectId}")
+  @CheckOwnership(repository = ProjectRepository.class, idParam = "projectId")
   public ResponseEntity<Void> deleteProject(
       Authentication authentication, @PathVariable Long projectId) {
 
@@ -119,11 +117,6 @@ public class ProjectController {
         projectService
             .findById(projectId)
             .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
-
-    // Verify ownership
-    if (!project.getClient().getNickname().equals(authentication.getName())) {
-      throw new UnauthorizedException("You do not have permission to delete this project");
-    }
 
     projectService.deleteProject(projectId);
     return ResponseEntity.noContent().build();

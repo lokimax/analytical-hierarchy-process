@@ -1,5 +1,6 @@
 package de.x132.ahp.model;
 
+import de.x132.ahp.security.Ownable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,7 +37,7 @@ import org.hibernate.envers.NotAudited;
 @EqualsAndHashCode(of = "id")
 @Audited
 @ToString(exclude = {"project", "sourceNode", "targetNode"})
-public class Connection {
+public class Connection implements Ownable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "connection_seq")
@@ -65,4 +66,9 @@ public class Connection {
   @UpdateTimestamp
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
+
+  @Override
+  public de.x132.ahp.model.Client getClient() {
+    return project.getClient();
+  }
 }

@@ -1,6 +1,8 @@
 package de.x132.ahp.repository;
 
 import de.x132.ahp.model.Comparison;
+import de.x132.ahp.model.Node;
+import de.x132.ahp.model.Prioritisation;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,9 +18,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ComparisonRepository extends JpaRepository<Comparison, Long> {
 
-  List<Comparison> findAllByPrioritisation(de.x132.ahp.model.Prioritisation prioritisation);
+  List<Comparison> findAllByPrioritisation(Prioritisation prioritisation);
 
-  List<Comparison> findAllByParent(de.x132.ahp.model.Node parent);
+  List<Comparison> findAllByParent(Node parent);
 
   @Query(
       "SELECT c FROM Comparison c WHERE c.prioritisation.project.client.nickname = :nickname "
