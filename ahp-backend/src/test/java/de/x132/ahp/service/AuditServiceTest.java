@@ -24,20 +24,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class AuditServiceTest {
 
-  @Autowired
-  private AuditService auditService;
+  @Autowired private AuditService auditService;
 
-  @Autowired
-  private ProjectRepository projectRepository;
+  @Autowired private ProjectRepository projectRepository;
 
-  @Autowired
-  private AnalysisRepository analysisRepository;
+  @Autowired private AnalysisRepository analysisRepository;
 
-  @Autowired
-  private ClientRepository clientRepository;
+  @Autowired private ClientRepository clientRepository;
 
-  @Autowired
-  private EntityManager entityManager;
+  @Autowired private EntityManager entityManager;
 
   private Project testProject;
   private Analysis testAnalysis;
@@ -45,7 +40,15 @@ class AuditServiceTest {
 
   @BeforeEach
   void setUp() {
-    testClient = Client.builder().name("TestClient").build();
+    testClient =
+        Client.builder()
+            .name("TestClient")
+            .nickname("TestNick")
+            .email("test@example.com")
+            .password("password123")
+            .surename("TestSurname")
+            .status(UserStatus.ACTIVE)
+            .build();
     testClient = clientRepository.save(testClient);
 
     testProject = Project.builder().name("TestProject").client(testClient).build();
@@ -59,21 +62,24 @@ class AuditServiceTest {
 
   @Test
   void testGetEntityRevisions_ReturnsRevisions() {
-    List<Map<String, Object>> revisions = auditService.getEntityRevisions(Project.class, testProject.getId());
+    List<Map<String, Object>> revisions =
+        auditService.getEntityRevisions(Project.class, testProject.getId());
     assertNotNull(revisions);
     assertTrue(revisions.size() >= 0);
   }
 
   @Test
   void testGetEntityHistory_ReturnsHistory() {
-    List<Map<String, Object>> history = auditService.getEntityHistory(Project.class, testProject.getId());
+    List<Map<String, Object>> history =
+        auditService.getEntityHistory(Project.class, testProject.getId());
     assertNotNull(history);
   }
 
   @Test
   void testFindEntityAtRevision_ReturnsEntity() {
     // Get available revisions first
-    List<Map<String, Object>> revisions = auditService.getEntityRevisions(Project.class, testProject.getId());
+    List<Map<String, Object>> revisions =
+        auditService.getEntityRevisions(Project.class, testProject.getId());
 
     if (revisions.isEmpty()) {
       // No revisions exist (transaction rollback in test environment)
@@ -83,7 +89,8 @@ class AuditServiceTest {
     } else {
       // Revisions exist - test normal retrieval
       Integer firstRevision = (Integer) revisions.get(0).get("revisionNumber");
-      Object entity = auditService.findEntityAtRevision(Project.class, testProject.getId(), firstRevision);
+      Object entity =
+          auditService.findEntityAtRevision(Project.class, testProject.getId(), firstRevision);
       assertNotNull(entity, "Should retrieve entity at revision " + firstRevision);
       assertTrue(entity instanceof Project);
     }
@@ -115,8 +122,9 @@ class AuditServiceTest {
 
   @Test
   void testAuditDataContainsMetadata() {
-    List<Map<String, Object>> revisions = auditService.getEntityRevisions(Project.class, testProject.getId());
-    !revisions.isEmpty()) {
+    List<Map<String, Object>> revisions =
+        auditService.getEntityRevisions(Project.class, testProject.getId());
+    if (!revisions.isEmpty()) {
       Map<String, Object> revision = revisions.get(0);
       assertNotNull(revision.get("revisionNumber"));
       assertNotNull(revision.get("revisionDate"));
