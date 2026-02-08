@@ -233,11 +233,11 @@ public class SensitivityAnalysisService {
                 .afterWinnerId(currWinner)
                 .afterWinnerName(altNames.getOrDefault(currWinner, "Alternative " + currWinner))
                 .description(
-                    String.format(
-                        "At weight %.1f%%, ranking changes from %s to %s",
-                        threshold * 100,
-                        altNames.getOrDefault(prevWinner, "Alternative " + prevWinner),
-                        altNames.getOrDefault(currWinner, "Alternative " + currWinner)))
+                    "At weight %.1f%%, ranking changes from %s to %s"
+                        .formatted(
+                            threshold * 100,
+                            altNames.getOrDefault(prevWinner, "Alternative " + prevWinner),
+                            altNames.getOrDefault(currWinner, "Alternative " + currWinner)))
                 .build());
       }
     }

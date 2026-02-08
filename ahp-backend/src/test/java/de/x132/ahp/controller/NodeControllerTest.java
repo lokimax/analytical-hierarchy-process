@@ -218,7 +218,7 @@ public class NodeControllerTest {
 
     // Create connection request
     String connectionJson =
-        String.format("{\"sourceNodeName\": \"SourceNode\", \"targetNodeName\": \"TargetNode\"}");
+        "{\"sourceNodeName\": \"SourceNode\", \"targetNodeName\": \"TargetNode\"}".formatted();
 
     mockMvc
         .perform(
@@ -264,7 +264,7 @@ public class NodeControllerTest {
     // 2. Create connections: Goal to Criteria
     for (int i = 1; i <= 3; i++) {
       String connectionJson =
-          String.format("{\"sourceNodeName\": \"Goal\", \"targetNodeName\": \"Criterion%d\"}", i);
+          "{\"sourceNodeName\": \"Goal\", \"targetNodeName\": \"Criterion%d\"}".formatted(i);
 
       mockMvc
           .perform(
@@ -279,9 +279,8 @@ public class NodeControllerTest {
     for (int i = 1; i <= 3; i++) {
       for (int j = 1; j <= 2; j++) {
         String connectionJson =
-            String.format(
-                "{\"sourceNodeName\": \"Criterion%d\", \"targetNodeName\": \"Alternative%d\"}",
-                i, j);
+            "{\"sourceNodeName\": \"Criterion%d\", \"targetNodeName\": \"Alternative%d\"}"
+                .formatted(i, j);
 
         mockMvc
             .perform(

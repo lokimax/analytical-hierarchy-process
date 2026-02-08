@@ -36,14 +36,18 @@ public class EmailService {
     message.setTo(email);
     message.setSubject("Activate your AHP account");
     message.setText(
-        String.format(
-            "Hello %s,\n\n"
-                + "Welcome to AHP! Please activate your account by clicking the link below:\n\n"
-                + "%s/#/activate?token=%s\n\n"
-                + "This link will expire in 24 hours.\n\n"
-                + "Best regards,\n"
-                + "AHP Team",
-            nickname, frontendUrl, token));
+        ("""
+            Hello %s,
+
+            Welcome to AHP! Please activate your account by clicking the link below:
+
+            %s/#/activate?token=%s
+
+            This link will expire in 24 hours.
+
+            Best regards,
+            AHP Team""")
+            .formatted(nickname, frontendUrl, token));
 
     mailSender.send(message);
   }
@@ -61,15 +65,20 @@ public class EmailService {
     message.setTo(email);
     message.setSubject("Password Reset Request");
     message.setText(
-        String.format(
-            "Hello %s,\n\n"
-                + "You have requested to reset your password. Please click the link below to set a new password:\n\n"
-                + "%s/#/reset-password?token=%s\n\n"
-                + "This link will expire in 24 hours.\n\n"
-                + "If you did not request a password reset, please ignore this email.\n\n"
-                + "Best regards,\n"
-                + "AHP Team",
-            nickname, frontendUrl, token));
+        ("""
+            Hello %s,
+
+            You have requested to reset your password. Please click the link below to set a new password:
+
+            %s/#/reset-password?token=%s
+
+            This link will expire in 24 hours.
+
+            If you did not request a password reset, please ignore this email.
+
+            Best regards,
+            AHP Team""")
+            .formatted(nickname, frontendUrl, token));
 
     mailSender.send(message);
   }

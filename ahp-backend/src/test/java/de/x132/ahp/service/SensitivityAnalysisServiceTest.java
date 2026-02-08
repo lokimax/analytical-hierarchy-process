@@ -53,7 +53,7 @@ class SensitivityAnalysisServiceTest {
     assertThat(result.getCurrentWeight()).isEqualTo(0.5);
     assertThat(result.getDataPoints()).hasSize(21);
     assertThat(result.getDataPoints().getFirst().getCriterionWeight()).isZero();
-    assertThat(result.getDataPoints().getLast().getCriterionWeight()).isEqualTo(1.0);
+    assertThat(result.getDataPoints().get(20).getCriterionWeight()).isEqualTo(1.0);
   }
 
   @Test

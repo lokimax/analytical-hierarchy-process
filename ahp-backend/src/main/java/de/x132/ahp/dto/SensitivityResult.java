@@ -2,7 +2,10 @@ package de.x132.ahp.dto;
 
 import java.util.List;
 import java.util.Map;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder

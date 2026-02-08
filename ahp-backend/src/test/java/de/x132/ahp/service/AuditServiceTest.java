@@ -88,7 +88,7 @@ class AuditServiceTest {
     assertFalse(revisions.isEmpty(), "Revisions be available to test finding entity at revision");
 
     // Revisions exist - test normal retrieval
-    Integer firstRevision = (Integer) revisions.get(0).get("revisionNumber");
+    Integer firstRevision = (Integer) revisions.getFirst().get("revisionNumber");
     Object entity =
         auditService.findEntityAtRevision(Project.class, testProject.getId(), firstRevision);
     assertNotNull(entity, "Should retrieve entity at revision " + firstRevision);
@@ -126,7 +126,7 @@ class AuditServiceTest {
 
     assertFalse(revisions.isEmpty(), "Revisions be available to test metadata");
 
-    Map<String, Object> revision = revisions.get(0);
+    Map<String, Object> revision = revisions.getFirst();
     assertNotNull(revision.get("revisionNumber"));
     assertNotNull(revision.get("revisionDate"));
     assertNotNull(revision.get("entity"));

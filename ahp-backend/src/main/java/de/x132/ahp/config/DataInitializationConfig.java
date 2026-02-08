@@ -16,7 +16,7 @@ public class DataInitializationConfig {
   public ApplicationRunner initializeDefaultClient(
       ClientRepository clientRepository, PasswordEncoder passwordEncoder) {
     return args -> {
-      if (!clientRepository.findByNickname("default").isPresent()) {
+      if (clientRepository.findByNickname("default").isEmpty()) {
         Client defaultClient =
             Client.builder()
                 .nickname("default")
@@ -34,7 +34,7 @@ public class DataInitializationConfig {
         System.out.println("Default client created successfully");
       }
 
-      if (!clientRepository.findByNickname("xntradm").isPresent()) {
+      if (clientRepository.findByNickname("xntradm").isEmpty()) {
         Client xntradmClient =
             Client.builder()
                 .nickname("xntradm")
