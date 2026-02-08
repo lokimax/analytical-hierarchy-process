@@ -35,11 +35,11 @@ jobs:
           cache-dependency-path: ahp-frontend/package-lock.json
 
       - name: Build project (frontend + backend)
-        run: mvn -DskipTests clean package
+        run: mvn -DskipTests clean install
 
       - name: Build and push image to Fly registry (Jib)
         run: |
-          mvn -f ahp-backend/pom.xml jib:build \
+          mvn -pl ahp-backend -am jib:build \
             -Dimage="$IMAGE_NAME" \
             -Djib.to.auth.username="x" \
             -Djib.to.auth.password="$FLY_API_TOKEN" \
