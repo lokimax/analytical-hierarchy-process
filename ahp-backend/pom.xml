@@ -221,10 +221,9 @@
                         <image>eclipse-temurin:21-jre-alpine</image>
                     </from>
                     <to>
-                        <image>ahp-backend</image>
+                        <image>${jib.image}</image>
                         <tags>
                             <tag>latest</tag>
-                            <tag>${project.version}</tag>
                         </tags>
                     </to>
                     <container>

@@ -26,6 +26,7 @@
         <spring-boot.version>3.1.5</spring-boot.version>
         <node.version>v18.19.1</node.version>
         <npm.version>10.2.3</npm.version>
+        <jib.image>ahp-backend:latest</jib.image>
     </properties>
 
     <dependencyManagement>
