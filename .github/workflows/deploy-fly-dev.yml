@@ -35,7 +35,7 @@ jobs:
           cache-dependency-path: ahp-frontend/package-lock.json
 
       - name: Build project (frontend + backend)
-        run: mvn -DskipTests clean install
+        run: mvn -pl ahp-backend -am -DskipTests clean install
 
       - name: Build and push image to Fly registry (Jib)
         run: |
