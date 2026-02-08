@@ -33,6 +33,24 @@ public class DataInitializationConfig {
         clientRepository.save(defaultClient);
         System.out.println("Default client created successfully");
       }
+
+      if (!clientRepository.findByNickname("xntradm").isPresent()) {
+        Client xntradmClient =
+            Client.builder()
+                .nickname("xntradm")
+                .name("Xntr")
+                .surename("Admin")
+                .email("xntradm@ahp.local")
+                .password(passwordEncoder.encode("xntradm"))
+                .status(UserStatus.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .activationCode(null)
+                .build();
+
+        clientRepository.save(xntradmClient);
+        System.out.println("xntradm client created successfully");
+      }
     };
   }
 }
