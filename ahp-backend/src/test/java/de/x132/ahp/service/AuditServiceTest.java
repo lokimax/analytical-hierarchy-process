@@ -12,16 +12,15 @@ import de.x132.ahp.repository.ProjectRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 class AuditServiceTest {
 
   @Autowired private AuditService auditService;
@@ -56,8 +55,13 @@ class AuditServiceTest {
 
     testAnalysis = Analysis.builder().name("TestAnalysis").project(testProject).build();
     testAnalysis = analysisRepository.save(testAnalysis);
+  }
 
-    entityManager.flush();
+  @AfterEach
+  void tearDown() {
+    analysisRepository.deleteAll();
+    projectRepository.deleteAll();
+    clientRepository.deleteAll();
   }
 
   @Test
@@ -65,7 +69,7 @@ class AuditServiceTest {
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Project.class, testProject.getId());
     assertNotNull(revisions);
-    assertTrue(revisions.size() >= 0);
+    assertFalse(revisions.isEmpty(), "Should find at least one revision");
   }
 
   @Test
@@ -81,19 +85,14 @@ class AuditServiceTest {
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Project.class, testProject.getId());
 
-    if (revisions.isEmpty()) {
-      // No revisions exist (transaction rollback in test environment)
-      // Verify method doesn't crash and returns null for non-existent revision
-      Object entity = auditService.findEntityAtRevision(Project.class, testProject.getId(), 1);
-      assertNull(entity, "Should return null when no revisions exist");
-    } else {
-      // Revisions exist - test normal retrieval
-      Integer firstRevision = (Integer) revisions.get(0).get("revisionNumber");
-      Object entity =
-          auditService.findEntityAtRevision(Project.class, testProject.getId(), firstRevision);
-      assertNotNull(entity, "Should retrieve entity at revision " + firstRevision);
-      assertTrue(entity instanceof Project);
-    }
+    assertFalse(revisions.isEmpty(), "Revisions be available to test finding entity at revision");
+
+    // Revisions exist - test normal retrieval
+    Integer firstRevision = (Integer) revisions.get(0).get("revisionNumber");
+    Object entity =
+        auditService.findEntityAtRevision(Project.class, testProject.getId(), firstRevision);
+    assertNotNull(entity, "Should retrieve entity at revision " + firstRevision);
+    assertTrue(entity instanceof Project);
   }
 
   @Test
@@ -124,12 +123,13 @@ class AuditServiceTest {
   void testAuditDataContainsMetadata() {
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Project.class, testProject.getId());
-    if (!revisions.isEmpty()) {
-      Map<String, Object> revision = revisions.get(0);
-      assertNotNull(revision.get("revisionNumber"));
-      assertNotNull(revision.get("revisionDate"));
-      assertNotNull(revision.get("entity"));
-    }
+
+    assertFalse(revisions.isEmpty(), "Revisions be available to test metadata");
+
+    Map<String, Object> revision = revisions.get(0);
+    assertNotNull(revision.get("revisionNumber"));
+    assertNotNull(revision.get("revisionDate"));
+    assertNotNull(revision.get("entity"));
   }
 
   private int validateLimit(int limit) {
