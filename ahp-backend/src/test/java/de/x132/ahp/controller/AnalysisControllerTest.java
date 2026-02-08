@@ -270,4 +270,26 @@ class AnalysisControllerTest {
             delete("/api/projects/TestProject/analyses/999").with(authentication(authentication)))
         .andExpect(status().isNotFound());
   }
+
+  @Test
+  @WithMockUser
+  @DisplayName(
+      "GET /api/projects/{projectName}/analyses/{analysisId} - Should return 404 when service returns empty")
+  void shouldReturn404WhenServiceReturnsEmpty() throws Exception {
+    // Given
+    when(authenticationService.getAuthenticatedClient(any())).thenReturn(testClient);
+    when(projectService.findByClientNicknameAndName("testuser", "TestProject"))
+        .thenReturn(Optional.of(testProject));
+
+    // Aspect checks repository - make it pass
+    when(analysisRepository.findById(999L)).thenReturn(Optional.of(testAnalysis));
+
+    // Controller calls service - make it fail
+    when(analysisService.findById(999L)).thenReturn(Optional.empty());
+
+    // When & Then
+    mockMvc
+        .perform(get("/api/projects/TestProject/analyses/999").with(authentication(authentication)))
+        .andExpect(status().isNotFound());
+  }
 }
