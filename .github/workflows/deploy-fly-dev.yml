@@ -1,0 +1,52 @@
+name: Deploy to Fly (dev)
+
+on:
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: fly-dev-01-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Dev-01
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      FLY_APP_NAME: ${{ secrets.FLY_APP_NAME }}
+      IMAGE_NAME: registry.fly.io/${{ secrets.FLY_APP_NAME }}:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ahp-frontend/package-lock.json
+
+      - name: Build project (frontend + backend)
+        run: mvn -DskipTests clean package
+
+      - name: Build and push image to Fly registry (Jib)
+        run: |
+          mvn -f ahp-backend/pom.xml jib:build \
+            -Dimage="$IMAGE_NAME" \
+            -Djib.to.auth.username="x" \
+            -Djib.to.auth.password="$FLY_API_TOKEN" \
+            -DskipTests
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly
+        run: flyctl deploy --app "$FLY_APP_NAME" --image "$IMAGE_NAME" --remote-only
