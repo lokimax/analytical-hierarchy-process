@@ -34,12 +34,12 @@ public class ResourceOwnershipAspect {
 
     for (int i = 0; i < paramNames.length; i++) {
       if (paramNames[i].equals(idParam)) {
-        if (args[i] instanceof Long) {
-          id = (Long) args[i];
+        if (args[i] instanceof Long long1) {
+          id = long1;
           break;
-        } else if (args[i] instanceof String) {
+        } else if (args[i] instanceof String string) {
           try {
-            id = Long.parseLong((String) args[i]);
+            id = Long.parseLong(string);
             break;
           } catch (NumberFormatException e) {
             // Ignore, maybe not the ID we are looking for or invalid format

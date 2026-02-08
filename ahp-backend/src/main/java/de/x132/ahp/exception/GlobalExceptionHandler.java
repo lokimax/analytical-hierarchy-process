@@ -108,7 +108,7 @@ public class GlobalExceptionHandler {
     ErrorResponse error =
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            ex.getMessage() + " (CR = " + String.format("%.3f", ex.getConsistencyRatio()) + ")",
+            ex.getMessage() + " (CR = " + "%.3f".formatted(ex.getConsistencyRatio()) + ")",
             getPath(request),
             LocalDateTime.now());
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);

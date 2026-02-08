@@ -166,7 +166,7 @@ public class AHPIntegrationTest {
     assertFalse(result.getNodeResults().isEmpty(), "Results should contain elements");
 
     // Extract single results from the first solving result
-    List<SingleResult> singleResults = result.getNodeResults().get(0).getResults();
+    List<SingleResult> singleResults = result.getNodeResults().getFirst().getResults();
     assertNotNull(singleResults, "Single results should not be null");
 
     // Find priority for each alternative
@@ -267,7 +267,7 @@ public class AHPIntegrationTest {
     assertTrue(result.isOverallConsistent(), "Equal weights should always be consistent");
 
     // Extract single results from the first solving result
-    List<SingleResult> singleResults = result.getNodeResults().get(0).getResults();
+    List<SingleResult> singleResults = result.getNodeResults().getFirst().getResults();
 
     // All alternatives should have equal priority (approximately 1/3)
     for (SingleResult sr : singleResults) {

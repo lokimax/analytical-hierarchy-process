@@ -110,7 +110,7 @@ class AHPNodeTest {
     Node parent = createNodeWithChildren("Parent", 2);
     Prioritisation prioritisation = Prioritisation.builder().build();
 
-    Node child1 = parent.getChildren().get(0);
+    Node child1 = parent.getChildren().getFirst();
     Node child2 = parent.getChildren().get(1);
 
     // A much more important than B

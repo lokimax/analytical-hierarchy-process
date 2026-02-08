@@ -85,7 +85,7 @@ class AnalysisServiceTest {
 
     // Then
     assertThat(result).hasSize(2);
-    assertThat(result.get(0).getName()).isEqualTo("Analysis 2");
+    assertThat(result.getFirst().getName()).isEqualTo("Analysis 2");
     assertThat(result.get(1).getName()).isEqualTo("Test Analysis");
     verify(analysisRepository, times(1)).findByProjectOrderByCreatedAtDesc(testProject);
   }
