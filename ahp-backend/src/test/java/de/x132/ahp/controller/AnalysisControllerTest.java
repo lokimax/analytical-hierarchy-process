@@ -233,4 +233,41 @@ class AnalysisControllerTest {
 
     verify(analysisService, times(1)).deleteAnalysis(1L);
   }
+
+  @Test
+  @WithMockUser
+  @DisplayName(
+      "GET /api/projects/{projectName}/analyses/{analysisId} - Should return 404 when analysis not found")
+  void shouldReturn404WhenAnalysisNotFound() throws Exception {
+    // Given
+    when(authenticationService.getAuthenticatedClient(any())).thenReturn(testClient);
+    when(projectService.findByClientNicknameAndName("testuser", "TestProject"))
+        .thenReturn(Optional.of(testProject));
+    // CheckOwnership aspect uses repository
+    when(analysisRepository.findById(999L)).thenReturn(Optional.empty());
+
+    // When & Then
+    mockMvc
+        .perform(get("/api/projects/TestProject/analyses/999").with(authentication(authentication)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName(
+      "DELETE /api/projects/{projectName}/analyses/{analysisId} - Should return 404 when deleting non-existent analysis")
+  void shouldReturn404WhenDeletingNonExistentAnalysis() throws Exception {
+    // Given
+    when(authenticationService.getAuthenticatedClient(any())).thenReturn(testClient);
+    when(projectService.findByClientNicknameAndName("testuser", "TestProject"))
+        .thenReturn(Optional.of(testProject));
+    // CheckOwnership aspect uses repository
+    when(analysisRepository.findById(999L)).thenReturn(Optional.empty());
+
+    // When & Then
+    mockMvc
+        .perform(
+            delete("/api/projects/TestProject/analyses/999").with(authentication(authentication)))
+        .andExpect(status().isNotFound());
+  }
 }
