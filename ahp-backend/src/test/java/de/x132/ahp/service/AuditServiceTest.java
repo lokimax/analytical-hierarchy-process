@@ -3,22 +3,24 @@ package de.x132.ahp.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import de.x132.ahp.model.Analysis;
+import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.model.UserStatus;
 import de.x132.ahp.repository.AnalysisRepository;
+import de.x132.ahp.repository.ClientRepository;
 import de.x132.ahp.repository.ProjectRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 class AuditServiceTest {
 
   @Autowired private AuditService auditService;
@@ -27,20 +29,39 @@ class AuditServiceTest {
 
   @Autowired private AnalysisRepository analysisRepository;
 
+  @Autowired private ClientRepository clientRepository;
+
   @Autowired private EntityManager entityManager;
 
   private Project testProject;
   private Analysis testAnalysis;
+  private Client testClient;
 
   @BeforeEach
   void setUp() {
-    testProject = Project.builder().name("TestProject").build();
+    testClient =
+        Client.builder()
+            .name("TestClient")
+            .nickname("TestNick")
+            .email("test@example.com")
+            .password("password123")
+            .surename("TestSurname")
+            .status(UserStatus.ACTIVE)
+            .build();
+    testClient = clientRepository.save(testClient);
+
+    testProject = Project.builder().name("TestProject").client(testClient).build();
     testProject = projectRepository.save(testProject);
 
     testAnalysis = Analysis.builder().name("TestAnalysis").project(testProject).build();
     testAnalysis = analysisRepository.save(testAnalysis);
+  }
 
-    entityManager.flush();
+  @AfterEach
+  void tearDown() {
+    analysisRepository.deleteAll();
+    projectRepository.deleteAll();
+    clientRepository.deleteAll();
   }
 
   @Test
@@ -48,7 +69,7 @@ class AuditServiceTest {
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Project.class, testProject.getId());
     assertNotNull(revisions);
-    assertTrue(revisions.size() >= 0);
+    assertFalse(revisions.isEmpty(), "Should find at least one revision");
   }
 
   @Test
@@ -60,8 +81,17 @@ class AuditServiceTest {
 
   @Test
   void testFindEntityAtRevision_ReturnsEntity() {
-    Object entity = auditService.findEntityAtRevision(Project.class, testProject.getId(), 1);
-    assertNotNull(entity);
+    // Get available revisions first
+    List<Map<String, Object>> revisions =
+        auditService.getEntityRevisions(Project.class, testProject.getId());
+
+    assertFalse(revisions.isEmpty(), "Revisions be available to test finding entity at revision");
+
+    // Revisions exist - test normal retrieval
+    Integer firstRevision = (Integer) revisions.get(0).get("revisionNumber");
+    Object entity =
+        auditService.findEntityAtRevision(Project.class, testProject.getId(), firstRevision);
+    assertNotNull(entity, "Should retrieve entity at revision " + firstRevision);
     assertTrue(entity instanceof Project);
   }
 
@@ -93,12 +123,13 @@ class AuditServiceTest {
   void testAuditDataContainsMetadata() {
     List<Map<String, Object>> revisions =
         auditService.getEntityRevisions(Project.class, testProject.getId());
-    if (!revisions.isEmpty()) {
-      Map<String, Object> revision = revisions.get(0);
-      assertNotNull(revision.get("revisionNumber"));
-      assertNotNull(revision.get("revisionDate"));
-      assertNotNull(revision.get("entity"));
-    }
+
+    assertFalse(revisions.isEmpty(), "Revisions be available to test metadata");
+
+    Map<String, Object> revision = revisions.get(0);
+    assertNotNull(revision.get("revisionNumber"));
+    assertNotNull(revision.get("revisionDate"));
+    assertNotNull(revision.get("entity"));
   }
 
   private int validateLimit(int limit) {

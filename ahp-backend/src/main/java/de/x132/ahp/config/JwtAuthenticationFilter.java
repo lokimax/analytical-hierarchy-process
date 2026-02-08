@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Optional;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,7 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
               .map(
                   client ->
                       new org.springframework.security.core.userdetails.User(
-                          client.getNickname(), "", new ArrayList<>()));
+                          client.getNickname(),
+                          "",
+                          java.util.Collections.singletonList(
+                              new org.springframework.security.core.authority
+                                  .SimpleGrantedAuthority("ROLE_USER"))));
 
       if (user.isPresent()) {
         Authentication auth =

@@ -141,13 +141,13 @@ describe('SensitivityAnalysisComponent', () => {
 
     component.goBack();
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/projects', 'test-project', 'analyses', 1]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/analysis', 'test-project', 1]);
   });
 
   it('should generate correct colors for alternatives', () => {
     const color1 = component.getColorForIndex(0, 1);
     const color2 = component.getColorForIndex(1, 1);
-    
+
     expect(color1).toContain('rgba');
     expect(color2).toContain('rgba');
     expect(color1).not.toBe(color2);

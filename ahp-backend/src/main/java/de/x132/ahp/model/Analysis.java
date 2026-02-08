@@ -1,5 +1,7 @@
 package de.x132.ahp.model;
 
+import de.x132.ahp.model.converter.AnalysisResultConverter;
+import de.x132.ahp.model.json.AnalysisResult;
 import de.x132.ahp.security.Ownable;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -48,7 +50,8 @@ public class Analysis implements Ownable {
   private String alternativeComparisons; // JSON
 
   @Column(columnDefinition = "TEXT")
-  private String results; // JSON with weights and final scores
+  @Convert(converter = AnalysisResultConverter.class)
+  private AnalysisResult results; // JSON with weights and final scores
 
   @Column private LocalDateTime completedAt;
 

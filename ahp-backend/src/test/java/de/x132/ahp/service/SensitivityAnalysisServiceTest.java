@@ -2,13 +2,12 @@ package de.x132.ahp.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.x132.ahp.dto.SensitivityPoint;
 import de.x132.ahp.dto.SensitivityResult;
 import de.x132.ahp.dto.StabilityMetrics;
 import de.x132.ahp.dto.StabilityMetrics.RiskLevel;
 import de.x132.ahp.model.Analysis;
-import java.util.HashMap;
+import de.x132.ahp.model.json.AnalysisResult;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,22 +27,21 @@ class SensitivityAnalysisServiceTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    ObjectMapper mapper = new ObjectMapper();
-    service = new SensitivityAnalysisService(mapper);
+    service = new SensitivityAnalysisService();
 
-    Map<String, Object> results = new HashMap<>();
-    results.put("criteriaWeights", Map.of("1", 0.5, "2", 0.5));
-    results.put(
-        "alternativeWeightsByCriterion",
-        Map.of(
-            "1", Map.of("101", 0.7, "102", 0.3),
-            "2", Map.of("101", 0.4, "102", 0.6)));
-    results.put("finalScores", Map.of("101", 0.55, "102", 0.45));
-    results.put("criteriaNames", Map.of("1", "Price", "2", "Quality"));
-    results.put("alternativeNames", Map.of("101", "Supplier A", "102", "Supplier B"));
+    AnalysisResult analysisResult =
+        AnalysisResult.builder()
+            .criteriaWeights(Map.of("1", 0.5, "2", 0.5))
+            .alternativeWeightsByCriterion(
+                Map.of(
+                    "1", Map.of("101", 0.7, "102", 0.3),
+                    "2", Map.of("101", 0.4, "102", 0.6)))
+            .resultingWeights(Map.of("101", 0.55, "102", 0.45))
+            .criteriaNames(Map.of("1", "Price", "2", "Quality"))
+            .alternativeNames(Map.of("101", "Supplier A", "102", "Supplier B"))
+            .build();
 
-    analysis =
-        Analysis.builder().id(99L).name("demo").results(mapper.writeValueAsString(results)).build();
+    analysis = Analysis.builder().id(99L).name("demo").results(analysisResult).build();
   }
 
   @Test

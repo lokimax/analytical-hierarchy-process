@@ -16,6 +16,7 @@ import de.x132.ahp.repository.ClientRepository;
 import de.x132.ahp.repository.TokenRepository;
 import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.ClientService;
+import de.x132.ahp.service.EmailService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,8 @@ public class RegistrationActivationTest {
   @Autowired private ClientService clientService;
 
   @Autowired private AuthenticationService authenticationService;
+
+  @org.springframework.boot.test.mock.mockito.MockBean private EmailService emailService;
 
   @BeforeEach
   public void setUp() {

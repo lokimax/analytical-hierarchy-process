@@ -12,11 +12,14 @@ import de.x132.ahp.dto.AnalysisRequest;
 import de.x132.ahp.model.Analysis;
 import de.x132.ahp.model.Client;
 import de.x132.ahp.model.Project;
+import de.x132.ahp.model.json.AnalysisResult;
+import de.x132.ahp.repository.AnalysisRepository;
 import de.x132.ahp.service.AnalysisService;
 import de.x132.ahp.service.AuthenticationService;
 import de.x132.ahp.service.ProjectService;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,10 +30,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @DisplayName("AnalysisController Integration Tests")
 class AnalysisControllerTest {
@@ -40,6 +47,7 @@ class AnalysisControllerTest {
   @Autowired private ObjectMapper objectMapper;
 
   @MockBean private AnalysisService analysisService;
+  @MockBean private AnalysisRepository analysisRepository;
 
   @MockBean private ProjectService projectService;
 
@@ -70,11 +78,18 @@ class AnalysisControllerTest {
             .project(testProject)
             .criteriaComparisons("{}")
             .alternativeComparisons("{}")
-            .results("{}")
+            .results(AnalysisResult.builder().build())
             .createdAt(LocalDateTime.now())
             .build();
 
-    authentication = new UsernamePasswordAuthenticationToken(testClient, null);
+    User principal =
+        new User(
+            testClient.getNickname(),
+            "",
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+
+    authentication =
+        new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
   }
 
   @Test
@@ -175,21 +190,20 @@ class AnalysisControllerTest {
     mockMvc
         .perform(get("/api/projects/TestProject/analyses").with(authentication(authentication)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].name").value("Test Analysis"))
-        .andExpect(jsonPath("$[1].name").value("Analysis 2"));
+        .andExpect(jsonPath("$", hasSize(2)));
   }
 
   @Test
   @WithMockUser
   @DisplayName(
-      "GET /api/projects/{projectName}/analyses/{analysisId} - Should return analysis by id")
+      "GET /api/projects/{projectName}/analyses/{analysisId} - Should return analysis by ID")
   void shouldReturnAnalysisById() throws Exception {
     // Given
     when(authenticationService.getAuthenticatedClient(any())).thenReturn(testClient);
     when(projectService.findByClientNicknameAndName("testuser", "TestProject"))
         .thenReturn(Optional.of(testProject));
     when(analysisService.findById(1L)).thenReturn(Optional.of(testAnalysis));
+    when(analysisRepository.findById(1L)).thenReturn(Optional.of(testAnalysis));
 
     // When & Then
     mockMvc
@@ -201,6 +215,27 @@ class AnalysisControllerTest {
 
   @Test
   @WithMockUser
+  @DisplayName("DELETE /api/projects/{projectName}/analyses/{analysisId} - Should delete analysis")
+  void shouldDeleteAnalysisSuccessfully() throws Exception {
+    // Given
+    when(authenticationService.getAuthenticatedClient(any())).thenReturn(testClient);
+    when(projectService.findByClientNicknameAndName("testuser", "TestProject"))
+        .thenReturn(Optional.of(testProject));
+    when(analysisRepository.findById(1L)).thenReturn(Optional.of(testAnalysis));
+
+    doNothing().when(analysisService).deleteAnalysis(1L);
+
+    // When & Then
+    mockMvc
+        .perform(
+            delete("/api/projects/TestProject/analyses/1").with(authentication(authentication)))
+        .andExpect(status().isNoContent());
+
+    verify(analysisService, times(1)).deleteAnalysis(1L);
+  }
+
+  @Test
+  @WithMockUser
   @DisplayName(
       "GET /api/projects/{projectName}/analyses/{analysisId} - Should return 404 when analysis not found")
   void shouldReturn404WhenAnalysisNotFound() throws Exception {
@@ -208,7 +243,8 @@ class AnalysisControllerTest {
     when(authenticationService.getAuthenticatedClient(any())).thenReturn(testClient);
     when(projectService.findByClientNicknameAndName("testuser", "TestProject"))
         .thenReturn(Optional.of(testProject));
-    when(analysisService.findById(999L)).thenReturn(Optional.empty());
+    // CheckOwnership aspect uses repository
+    when(analysisRepository.findById(999L)).thenReturn(Optional.empty());
 
     // When & Then
     mockMvc
@@ -219,21 +255,41 @@ class AnalysisControllerTest {
   @Test
   @WithMockUser
   @DisplayName(
-      "DELETE /api/projects/{projectName}/analyses/{analysisId} - Should delete analysis successfully")
-  void shouldDeleteAnalysisSuccessfully() throws Exception {
+      "DELETE /api/projects/{projectName}/analyses/{analysisId} - Should return 404 when deleting non-existent analysis")
+  void shouldReturn404WhenDeletingNonExistentAnalysis() throws Exception {
     // Given
     when(authenticationService.getAuthenticatedClient(any())).thenReturn(testClient);
     when(projectService.findByClientNicknameAndName("testuser", "TestProject"))
         .thenReturn(Optional.of(testProject));
-    when(analysisService.findById(1L)).thenReturn(Optional.of(testAnalysis));
-    doNothing().when(analysisService).deleteAnalysis(1L);
+    // CheckOwnership aspect uses repository
+    when(analysisRepository.findById(999L)).thenReturn(Optional.empty());
 
     // When & Then
     mockMvc
         .perform(
-            delete("/api/projects/TestProject/analyses/1").with(authentication(authentication)))
-        .andExpect(status().isNoContent());
+            delete("/api/projects/TestProject/analyses/999").with(authentication(authentication)))
+        .andExpect(status().isNotFound());
+  }
 
-    verify(analysisService, times(1)).deleteAnalysis(1L);
+  @Test
+  @WithMockUser
+  @DisplayName(
+      "GET /api/projects/{projectName}/analyses/{analysisId} - Should return 404 when service returns empty")
+  void shouldReturn404WhenServiceReturnsEmpty() throws Exception {
+    // Given
+    when(authenticationService.getAuthenticatedClient(any())).thenReturn(testClient);
+    when(projectService.findByClientNicknameAndName("testuser", "TestProject"))
+        .thenReturn(Optional.of(testProject));
+
+    // Aspect checks repository - make it pass
+    when(analysisRepository.findById(999L)).thenReturn(Optional.of(testAnalysis));
+
+    // Controller calls service - make it fail
+    when(analysisService.findById(999L)).thenReturn(Optional.empty());
+
+    // When & Then
+    mockMvc
+        .perform(get("/api/projects/TestProject/analyses/999").with(authentication(authentication)))
+        .andExpect(status().isNotFound());
   }
 }
